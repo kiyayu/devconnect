@@ -1,0 +1,26 @@
+# Node modules
+Frontend/node_modules
+Backend/node_modules
+
+# Environment files
+Frontend/.env
+Frontend/.env.development
+Frontend/.env.production
+Backend/.env
+Backend/.env.development
+Backend/.env.production
+
+# Build folders
+Frontend/dist
+Backend/build
+
+# Logs
+Frontend/logs
+Backend/logs
+*.log
+
+# Miscellaneous
+.DS_Store                # macOS system files
+Thumbs.db                # Windows thumbnail cache
+.vscode/                 # VSCode settings
+.idea/                   # JetBrains IDE settings

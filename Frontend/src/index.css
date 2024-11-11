@@ -1,0 +1,43 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+.loader {
+  border-top-color: #3498db;
+  animation: spinner 1.5s linear infinite;
+}
+
+@keyframes spinner {
+  to {
+    transform: rotate(360deg);
+  }
+}
+input{
+border: 1px solid green;}
+.grad{
+  width: 200px;
+  background-image: linear-gradient(to right, #f83600 0%, #f9d423 100%);
+  color: white;
+  padding: 3px ;
+  border-radius: 20px;
+}
+.grad-blue{
+background-image: linear-gradient(to right, #4facfe 0%, #00f2fe 100%);
+}
+.grad-orange{
+    background-image: linear-gradient(-60deg, #ff5858 0%, #f09819 100%);
+}
+.grand-black{
+ background-image: linear-gradient(60deg, #29323c 0%, #485563 100%);
+}
+
+/* App.css or main CSS file */
+.app-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh; /* Full viewport height */
+}
+
+.page-container {
+  flex: 1; /* Allows PageContainer to grow and take remaining space */
+}
