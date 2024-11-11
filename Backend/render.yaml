@@ -1,8 +1,8 @@
 - type: web
   name: my-backend
   env: node
-  buildCommand: npm install
-  startCommand: npm start
+  buildCommand: cd Backend && npm install
+  startCommand: cd Backend && nodemon Q/server.js
   branch: main
   envVars:
     - key: MONGO_URI
