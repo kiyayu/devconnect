@@ -1,8 +1,8 @@
 - type: static_site
-  name: my-frontend
-  buildCommand: cd Frontend && npm install && npm run build
+name: my-frontend
+  buildCommand: cd Frontend && npm install && npm run build  # Install dependencies and build frontend
   publishDirectory: Frontend/dist  # This is the directory where Vite stores the build output
-  startCommand: cd Frontend && npx serve -s dist
+  startCommand: npx serve -s Frontend/dist  # Serve the production build from dist directory
   branch: main
   envVars:
     - key: REACT_APP_API_URL

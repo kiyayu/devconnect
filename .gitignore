@@ -10,7 +10,7 @@ Backend/.env.development
 Backend/.env.production
 
 # Build folders
-Frontend/dist
+#Frontend/dist
 Backend/build
 
 # Logs
