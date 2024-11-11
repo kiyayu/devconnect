@@ -22,7 +22,7 @@ mongoose
  
 
 // Server and Socket.io setup
-const port = 5004;
+const port = process.env.PORT;
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
