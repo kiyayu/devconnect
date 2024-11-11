@@ -1,6 +1,5 @@
 # Node modules
-Frontend/node_modules
-Backend/node_modules
+node_modules/
 
 # Environment files
 Frontend/.env
@@ -18,6 +17,8 @@ Backend/build
 Frontend/logs
 Backend/logs
 *.log
+npm-debug.log*
+yarn-error.log*
 
 # Miscellaneous
 .DS_Store                # macOS system files
