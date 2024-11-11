@@ -1,0 +1,8 @@
+- type: static_site
+  name: my-frontend
+  buildCommand: npm run build
+  publishDirectory: build
+  branch: main
+  manualDeploy: true  # Auto-deploy is false; you need to manually trigger the deploy
+  regions:
+    - oregon

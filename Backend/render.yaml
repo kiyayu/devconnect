@@ -1,0 +1,20 @@
+- type: web
+  name: my-backend
+  env: node
+  buildCommand: npm install
+  startCommand: npm start
+  branch: main
+  envVars:
+    - key: MONGO_URI
+      value: "RENDER_MONGO_URI"  # Placeholder for MONGO_URI
+    - key: JWT_SECRET
+      value: "RENDER_JWT_SECRET"  # Placeholder for JWT_SECRET
+    - key: CLOUDINARY_CLOUD_NAME
+      value: "RENDER_CLOUDINARY_CLOUD_NAME"  # Placeholder for Cloudinary Cloud Name
+    - key: CLOUDINARY_API_KEY
+      value: "RENDER_CLOUDINARY_API_KEY"  # Placeholder for Cloudinary API Key
+    - key: CLOUDINARY_API_SECRET
+      value: "RENDER_CLOUDINARY_API_SECRET"  # Placeholder for Cloudinary API Secret
+  manualDeploy: true  # Auto-deploy is false; you need to manually trigger the deploy
+  regions:
+    - oregon
