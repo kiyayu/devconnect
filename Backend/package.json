@@ -3,7 +3,8 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "start": "nodemon Q/server.js"
+    "start": "node Q/server.js",
+    "dev": "nodemon Q/server.js"
   },
   "keywords": [],
   "author": "",
