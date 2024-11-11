@@ -1,8 +1,12 @@
-- type: static_site
+- type: web
   name: my-frontend
-  buildCommand: npm run build
-  publishDirectory: build
+  env: node
+  buildCommand: cd Frontend && npm install && npm run build
+  startCommand: cd Frontend && npx serve -s build
   branch: main
-  manualDeploy: true  # Auto-deploy is false; you need to manually trigger the deploy
+  envVars:
+    - key: REACT_APP_API_URL
+      value: "https://devconnect-w1w6.onrender.com"  # The backend API URL for production
+  manualDeploy: true
   regions:
     - oregon
