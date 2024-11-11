@@ -6,7 +6,7 @@ name: my-frontend
   branch: main
   envVars:
     - key: REACT_APP_API_URL
-      value: https://devconnect-w1w6.onrender.com # The backend API URL for production
+      value:https://devconnect-w1w6.onrender.com # The backend API URL for production
   manualDeploy: true
   regions:
     - oregon
