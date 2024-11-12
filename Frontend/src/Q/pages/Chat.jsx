@@ -74,11 +74,13 @@ const handleMore = (id) => {
 };
 
   useEffect(() => {
-    const newSocket = io(import.meta.env.VITE_API_URL, {
-      transports: ["websocket"],
-      auth: { token },
-    });
-
+ const newSocket = io(import.meta.env.VITE_API_URL, {
+   transports: ["websocket", "polling"], // Add polling as fallback
+   auth: { token },
+   reconnection: true,
+   reconnectionAttempts: 5,
+   reconnectionDelay: 1000,
+ });
     newSocket.on("connect", () => {
        
     });
