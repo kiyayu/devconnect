@@ -8,9 +8,9 @@ import {
   MdBlock,
   MdAccessTime,
 } from "react-icons/md";
-import axios from "axios";
 import { toast } from "react-toastify";
 import { getToken } from "../../auth";
+import {userProfile, updateUserProfile } from "../services/api"
 import moment from "moment";
 
 const Profile = () => {
@@ -41,15 +41,8 @@ const Profile = () => {
   useEffect(() => {
     const fetchUser = async () => {
       try {
-        const token = getToken();
-        const response = await axios.get(
-          `${"https://devconnect-w1w6.onrender.com"}/api/auth/profile`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
+       
+        const response = await userProfile()
         setUser(response.data);
         setFormData({
           name: response.data.name || "",
@@ -107,16 +100,7 @@ const Profile = () => {
         }
       });
 
-      const response = await axios.put(
-        `${"https://devconnect-w1w6.onrender.com"}/api/auth/updateProfile`,
-        formDataToSend,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "multipart/form-data",
-          },
-        }
-      );
+      const response = await updateUserProfile(formDataToSend)
 
       setUser(response.data);
       setEditing(false);

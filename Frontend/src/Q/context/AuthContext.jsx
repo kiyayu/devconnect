@@ -2,7 +2,7 @@ import React, { createContext, useState, useEffect } from "react";
 import { jwtDecode } from "jwt-decode"; // Corrected import
 import { saveToken, getToken, clearToken } from "../../auth";
 import axios from "axios";
-
+import { fetchUsers } from "../services/api";
 export const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
@@ -24,15 +24,8 @@ export const AuthProvider = ({ children }) => {
 
   const fetchAllUsers = async () => {
     try {
-      const token = getToken(); // Correctly get the token
-      const response = await axios.get(
-        `${
-          import.meta.env.VITE_API_URL
-        }/api/auth/users`,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
+       
+      const response = await fetchUsers(); 
       setAllUsers(response.data);
     } catch (error) {
       console.error("error", error); // Corrected error logging

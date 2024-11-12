@@ -168,19 +168,11 @@ const handleUpdateMessage = useCallback(
       if (file) {
         const formData = new FormData();
         formData.append("file", file); // Append the file to the FormData
-        const token = getToken(); // Ensure you have the correct function to retrieve the token
+        // Ensure you have the correct function to retrieve the token
 
         try {
-          const response = await axios.post(
-            `${
-              import.meta.env.VITE_API_URL
-            }/api/files/upload`,
+          const response = await api.post("/files/upload",
             formData,
-            {
-              headers: {
-                Authorization: `Bearer ${token}`,
-              },
-            }
           );
      
           const data = response.data; // Access the response data
@@ -233,18 +225,15 @@ const handleEmojiClick = (event, emojiObject) => {
  
   const handleGroup = async () => {
     try {
-      const token = getToken();
+      
       if (!name.trim()) {
         toast.error("Please enter a group name");
         return;
       }
 
-      const response = await axios.post(
-        `${import.meta.env.VITE_API_URL}/api/create`,
+      const response = await api.post(
+        `/api/create`,
         { name },
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
       );
 
       toast.success("Group created successfully");

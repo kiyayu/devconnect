@@ -1,7 +1,7 @@
 import React, { createContext, useState, useEffect, useCallback } from "react";
 import axios from "axios";
 import { getToken } from "../../auth";
-
+import { getNotifications, markNotifications } from "../services/api";
 export const NotificationContext = createContext();
 
 const api = axios.create({
@@ -20,10 +20,8 @@ export const NotificationProvider = ({ children }) => {
     try {
       setLoading(true);
       setError(null);
-      const token = getToken();
-      const response = await api.get(`/api/notifications?page=${pageNum}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      
+      const response = await  getNotifications(pageNum)
 
       const { notifications, pagination } = response.data;
       setNotifications((prev) =>
@@ -40,14 +38,8 @@ export const NotificationProvider = ({ children }) => {
 
   const markAllAsRead = async () => {
     try {
-      const token = getToken();
-      await api.post(
-        "/api/notifications/read",
-        {},
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
+      
+      await markNotifications()
 
       setNotifications((prev) =>
         prev.map((notification) => ({ ...notification, isRead: true }))

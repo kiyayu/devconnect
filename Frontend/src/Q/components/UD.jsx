@@ -11,10 +11,8 @@ import {
 import { GiTrophyCup } from "react-icons/gi";
 import { getToken } from "../../auth";
 import { AuthContext } from "../context/AuthContext";
-
-const api = axios.create({
-  baseURL: `${"https://devconnect-w1w6.onrender.com"}/api`,
-});
+import  api from "../services/api"
+ 
 
  const StatCard = ({ title, value, icon }) => {
   return (

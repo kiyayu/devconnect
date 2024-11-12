@@ -4,7 +4,7 @@ import { getToken } from "../../auth"; // Adjust the path based on your project 
 
 // Create an Axios instance with a base URL from environment variables
 const api = axios.create({
-  baseURL: `${"https://devconnect-w1w6.onrender.com"}/api`,
+  baseURL: `${import.meta.env.VITE_API_URL}/api`,
 });
 
 // Request interceptor to attach token
@@ -34,13 +34,7 @@ api.interceptors.response.use(
 );
 
 // Chat API calls
-export const fetchConversations = () => api.get("/conversations");
-export const createConversation = (conversationData) =>
-  api.post("/conversations", conversationData);
-export const fetchMessages = (conversationId) => {
-  if (!conversationId) throw new Error("Conversation ID is required");
-  return api.get(`/conversations/${conversationId}/messages`);
-};
+ 
 
 // Questions API calls
 export const fetchQuestions = () => api.get("/questions");
@@ -129,15 +123,14 @@ export const deleteTag = (id) => {
 };
 
 // Update user profile
-export const updateUserProfile = (userData) => {
-  if (!userData) throw new Error("User data is required");
-  
-  const formData = new FormData();
-  Object.keys(userData).forEach((key) => {
-    formData.append(key, userData[key]);
-  });
-  
+export const updateUserProfile = (formData) => {
   return api.put("/auth/updateProfile", formData);
 };
+
+//get Notifications
+export const getNotifications = (page) =>
+  api.get(`/api/notifications?page=${page}`);
+export const markNotifications = () => api.post("/api/notifications/read", {}); 
+
 
 export default api;
