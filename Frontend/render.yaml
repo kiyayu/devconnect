@@ -1,11 +1,12 @@
-- type: static_site
-name: my-frontend
-  buildCommand: cd Frontend && npm install && npm run build  # Install dependencies and build frontend
-  publishDirectory: Frontend/dist  # This is the directory where Vite stores the build output
-  startCommand: npx serve -s Frontend/dist  # Serve the production build from dist directory
-  branch: main
-  envVars:
-    - key: REACT_APP_API_URL
+services:
+  - type: static
+    name: my-frontend
+    buildCommand: cd Frontend && npm install && npm run build
+    publishDir: Frontend/dist
+    staticPublishPath: /
+    branch: main
+    envVars:
+      - key: VITE_API_URL
       value:https://devconnect-w1w6.onrender.com # The backend API URL for production
   manualDeploy: true
   regions:
