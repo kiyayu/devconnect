@@ -28,7 +28,7 @@ export const AuthProvider = ({ children }) => {
       const response = await axios.get(
         `${
           import.meta.env.VITE_API_URL
-        }/http://192.168.4.2:5004/api/auth/users`,
+        }/api/auth/users`,
         {
           headers: { Authorization: `Bearer ${token}` },
         }

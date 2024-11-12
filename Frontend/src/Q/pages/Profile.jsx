@@ -43,7 +43,7 @@ const Profile = () => {
       try {
         const token = getToken();
         const response = await axios.get(
-          `${import.meta.env.VITE_API_URL}/api/auth/profile`,
+          `${"https://devconnect-w1w6.onrender.com"}/api/auth/profile`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
