@@ -108,7 +108,7 @@ const Profile = () => {
       });
 
       const response = await axios.put(
-        `${import.meta.env.VITE_API_URL}/api/auth/updateProfile`,
+        `${"https://devconnect-w1w6.onrender.com"}/api/auth/updateProfile`,
         formDataToSend,
         {
           headers: {

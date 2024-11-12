@@ -12,7 +12,9 @@ import { GiTrophyCup } from "react-icons/gi";
 import { getToken } from "../../auth";
 import { AuthContext } from "../context/AuthContext";
 
-
+const api = axios.create({
+  baseURL: `${"https://devconnect-w1w6.onrender.com"}/api`,
+});
 
  const StatCard = ({ title, value, icon }) => {
   return (
@@ -74,13 +76,15 @@ const Dashboard = () => {
     const fetchDashboardData = async () => {
       try {
         const token = getToken();
-        const endpoint = user.role === 'admin'
-          ? `${import.meta.env.VITE_API_URL}/api/auth/admin-dashboard`
-          : `${import.meta.env.VITE_API_URL}/api/auth/dashboard`;
+            const endpoint =
+              user.role === "admin"
+                ? `/auth/admin-dashboard`
+                : `/auth/dashboard`;
 
-        const response = await axios.get(endpoint, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+            // Make the request using the appropriate endpoint
+            const response = await api.get(endpoint, {
+              headers: { Authorization: `Bearer ${token}` },
+            });
         setDashboardData(response.data);
         setLoading(false);
       } catch (error) {
