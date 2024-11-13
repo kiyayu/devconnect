@@ -9,18 +9,20 @@ export default defineConfig(({ mode }) => {
     server: {
       proxy: {
         "/api": {
-          target: env.VITE_API_URL, // Proxy to backend URL in development
+          target: env.VITE_API_URL,
           changeOrigin: true,
-          secure: false,
-          ws: true, // Enables WebSocket support
+          secure: true,
+          ws: true,
         },
       },
-      port: 3000,
       strictPort: true,
     },
     build: {
       outDir: "dist",
       sourcemap: mode === "development",
+    },
+    define: {
+      "process.env": {},
     },
   };
 });

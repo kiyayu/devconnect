@@ -28,30 +28,27 @@ const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
     origin: [
-      "http://localhost:3000",
+      "http://localhost:5004",
       "https://devconnect-1-imto.onrender.com",
-      "https://devconnect-w1w6.onrender.com",
-      "http://devconnect-1-imto.onrender.com",
-      "http://devconnect-w1w6.onrender.com",
+      "https://devconnect-w1w6.onrender.com"
     ],
     methods: ["GET", "POST", "PUT", "DELETE"],
     credentials: true,
+    allowedHeaders: ["Content-Type", "Authorization"]
   },
 });
 
-// Also add CORS middleware to Express app
-app.use(
-  cors({
-    origin: [
-      "http://localhost:3000",
-      "https://devconnect-1-imto.onrender.com",
-      "https://devconnect-w1w6.onrender.com",
-      "http://devconnect-1-imto.onrender.com",
-      "http://devconnect-w1w6.onrender.com",
-    ],
-    credentials: true,
-  })
-);
+// Updated CORS configuration for Express
+app.use(cors({
+  origin: [
+    "http://localhost:5004",
+    "https://devconnect-1-imto.onrender.com",
+    "https://devconnect-w1w6.onrender.com"
+  ],
+  credentials: true,
+  methods: ["GET", "POST", "PUT", "DELETE"],
+  allowedHeaders: ["Content-Type", "Authorization"]
+}));
 // Rest of your server code remains the same
  
  

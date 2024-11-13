@@ -7,12 +7,16 @@ services:
     branch: main
     envVars:
       - key: MONGO_URI
-        value: "YOUR_PRODUCTION_MONGO_URI"
+        sync: false
       - key: JWT_SECRET
-        value: "YOUR_PRODUCTION_JWT_SECRET"
+        sync: false
       - key: CLOUDINARY_CLOUD_NAME
-        value: "YOUR_CLOUDINARY_CLOUD_NAME"
+        sync: false
       - key: CLOUDINARY_API_KEY
-        value: "YOUR_CLOUDINARY_API_KEY"
+        sync: false
       - key: CLOUDINARY_API_SECRET
-        value: "YOUR_CLOUDINARY_API_SECRET"
+        sync: false
+    headers:
+      - path: /*
+        name: Access-Control-Allow-Origin
+        value: https://devconnect-1-imto.onrender.com
