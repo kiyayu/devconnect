@@ -27,17 +27,31 @@ const port = process.env.PORT || 5004;
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
-    // Add both development and production URLs
     origin: [
       "http://localhost:3000",
       "https://devconnect-1-imto.onrender.com",
-      "https://devconnect-w1w6.onrender.com"
+      "https://devconnect-w1w6.onrender.com",
+      "http://devconnect-1-imto.onrender.com",
+      "http://devconnect-w1w6.onrender.com",
     ],
     methods: ["GET", "POST", "PUT", "DELETE"],
     credentials: true,
   },
- 
 });
+
+// Also add CORS middleware to Express app
+app.use(
+  cors({
+    origin: [
+      "http://localhost:3000",
+      "https://devconnect-1-imto.onrender.com",
+      "https://devconnect-w1w6.onrender.com",
+      "http://devconnect-1-imto.onrender.com",
+      "http://devconnect-w1w6.onrender.com",
+    ],
+    credentials: true,
+  })
+);
 // Rest of your server code remains the same
  
  
@@ -243,6 +257,6 @@ socket.on("updateMessage", async (data) => {
  
 
 // Start the server
-server.listen(port, () => {
+server.listen(port, "0.0.0.0", () => {
   console.log(`Server is running on http://localhost:${port}`);
 });

@@ -1,5 +1,5 @@
 services:
- - type: static
+  - type: static
     name: my-frontend
     buildCommand: cd Frontend && npm install && npm run build
     publishDir: Frontend/dist
@@ -10,7 +10,8 @@ services:
         value: https://devconnect-w1w6.onrender.com
     routes:
       - type: rewrite
+        source: /api/*
+        destination: https://devconnect-w1w6.onrender.com/api/:splat
+      - type: rewrite
         source: /*
         destination: /index.html
-    regions:
-      - oregon

@@ -4,7 +4,11 @@ import { getToken } from "../../auth"; // Adjust the path based on your project 
 
 // Create an Axios instance with a base URL from environment variables
 const api = axios.create({
-  baseURL: `${import.meta.env.VITE_API_URL}/api`, // Make sure this matches
+  baseURL: `${import.meta.env.VITE_API_URL}/api`,
+  withCredentials: true,
+  headers: {
+    "Content-Type": "application/json",
+  },
 });
 
 // Request interceptor to attach token
