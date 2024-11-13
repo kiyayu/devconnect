@@ -12,7 +12,7 @@ import { GiTrophyCup } from "react-icons/gi";
 import { getToken } from "../../auth";
 import { AuthContext } from "../context/AuthContext";
 import  api from "../services/api"
- 
+import CreateTag  from "../components/CreateTag"
 
  const StatCard = ({ title, value, icon }) => {
   return (
@@ -41,7 +41,7 @@ const ContributorsList = ({ title, contributors, metric, metricLabel }) => (
           <div className="flex items-center space-x-3">
             {user.profilePicture ? (
               <img
-                src={`${import.meta.env.VITE_API_URL}/${
+                src={`/${
                   user.profilePicture
                 }`}
                 alt="Profile"
@@ -422,7 +422,7 @@ const AnswerTable = ({ answers }) => (
 
 const AdminDashboardContent = ({ data }) => {
   const [activeTab, setActiveTab] = useState('overview');
-  const { platformStats, topContributors, recentQuestions, allUsers, allQuestions, allAnswers } = data;
+  const { platformStats, topContributors, recentQuestions, allUsers, allQuestions, allAnswers, tags } = data;
  
 console.log(allAnswers);
   const renderContent = () => {
@@ -509,6 +509,26 @@ console.log(allAnswers);
         return <QuestionsTable questions={allQuestions} />;
       case 'answers':
         return <AnswersTable answers={allAnswers} />;
+   case 'tags':
+      return (
+        <div className="bg-green-500 rounded-lg shadow p-6">
+          <CreateTag 
+            onTagCreated={(newTag) => {
+              // Handle the newly created tag
+              toast({
+                title: "Success",
+                description: `Tag "${newTag.name}" has been created successfully.`,
+                status: "success",
+                duration: 3000,
+                isClosable: true,
+              });
+            }} 
+          />
+          
+          {/* You can add a tag list component here if needed */}
+          
+        </div>
+      );
       default:
         return null;
     }

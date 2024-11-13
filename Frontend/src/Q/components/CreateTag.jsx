@@ -19,7 +19,6 @@ const CreateTag = ({ onTagCreated }) => {
   const [description, setDescription] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const toast = useToast();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -34,79 +33,70 @@ const CreateTag = ({ onTagCreated }) => {
       setLoading(true);
       const response = await createTag({ name, description });
       setLoading(false);
-      toast({
-        title: "Tag Created",
-        description: `Tag "${response.data.name}" has been created successfully.`,
-        status: "success",
-        duration: 3000,
-        isClosable: true,
-      });
       setName("");
       setDescription("");
-      onTagCreated(response.data); // Callback to update tag list
+      onTagCreated(response.data);
     } catch (err) {
       setLoading(false);
       console.error("Error creating tag:", err);
       setError(err.response?.data?.message || "Failed to create tag.");
-      toast({
-        title: "Error",
-        description: err.response?.data?.message || "Failed to create tag.",
-        status: "error",
-        duration: 3000,
-        isClosable: true,
-      });
     }
   };
 
   return (
-    <Box
-      bg="white"
-      p={6}
-      borderRadius="md"
-      boxShadow="md"
-      maxW="500px"
-      mx="auto"
-    >
-      <Heading size="md" mb={4} textAlign="center">
-        Create New Tag
-      </Heading>
+    <div className="max-w-lg mx-auto">
+      <h2 className="text-xl font-bold mb-4 text-center">Create New Tag</h2>
       <form onSubmit={handleSubmit}>
-        <FormControl id="name" mb={4} isRequired>
-          <FormLabel>Tag Name</FormLabel>
-          <Input
+        <div className="mb-4">
+          <label
+            className="block text-gray-700 text-sm font-bold mb-2"
+            htmlFor="name"
+          >
+            Tag Name *
+          </label>
+          <input
             type="text"
+            id="name"
+            className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
             value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder="Enter tag name"
+            required
           />
-        </FormControl>
+        </div>
 
-        <FormControl id="description" mb={4}>
-          <FormLabel>Tag Description</FormLabel>
-          <Textarea
+        <div className="mb-4">
+          <label
+            className="block text-gray-700 text-sm font-bold mb-2"
+            htmlFor="description"
+          >
+            Tag Description
+          </label>
+          <textarea
+            id="description"
+            className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             placeholder="Enter tag description (optional)"
+            rows="4"
           />
-        </FormControl>
+        </div>
 
-        {error && (
-          <Box mb={4} color="red.500">
-            {error}
-          </Box>
-        )}
+        {error && <div className="mb-4 text-red-500 text-sm">{error}</div>}
 
-        <Button
+        <button
           type="submit"
-          colorScheme="green"
-          width="full"
-          isDisabled={loading}
+          disabled={loading}
+          className="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline disabled:opacity-50"
         >
-          {loading ? <Spinner size="sm" /> : "Create Tag"}
-        </Button>
+          {loading ? (
+            <span className="inline-block animate-spin rounded-full h-4 w-4 border-b-2 border-white"></span>
+          ) : (
+            "Create Tag"
+          )}
+        </button>
       </form>
-    </Box>
+    </div>
   );
 };
-
 export default CreateTag;
