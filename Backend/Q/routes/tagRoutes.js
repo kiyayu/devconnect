@@ -30,7 +30,7 @@ router.post("/", protect, authorize("admin"), createTag);
 // @desc    Update an existing tag
 // @route   PUT /api/tags/:id
 // @access  Private (Only admins)
-router.put("/:id", protect, authorize("admin"), updateTag);
+router.put("/:id", protect,  updateTag);
 
 // @desc    Delete a tag
 // @route   DELETE /api/tags/:id
