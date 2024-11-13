@@ -73,51 +73,49 @@ const handleMore = (id) => {
   
 };
 
-  useEffect(() => {
- const newSocket = io(import.meta.env.VITE_API_URL, {
-   transports: ["websocket", "polling"], // Add polling as fallback
-   auth: { token },
-   reconnection: true,
-   reconnectionAttempts: 5,
-   reconnectionDelay: 1000,
- });
-    newSocket.on("connect", () => {
-       
-    });
+useEffect(() => {
+  const newSocket = io(import.meta.env.VITE_API_URL, {
+    transports: ["websocket", "polling"],
+    auth: { token },
+    reconnection: true,
+    reconnectionAttempts: 5,
+    reconnectionDelay: 1000,
+    withCredentials: true,
+  });
+  newSocket.on("connect", () => {});
 
-    newSocket.on("connect_error", (error) => {
-      console.error("Socket connection error:", error);
-      toast.error("Connection error. Please try again.");
-    });
+  newSocket.on("connect_error", (error) => {
+    console.error("Socket connection error:", error);
+    toast.error("Connection error. Please try again.");
+  });
 
-    newSocket.on("updated_users", (users) => {
-      const filteredUsers = users.filter((user) => user._id !== userId);
-      setOnlineUsers(filteredUsers);
-    });
+  newSocket.on("updated_users", (users) => {
+    const filteredUsers = users.filter((user) => user._id !== userId);
+    setOnlineUsers(filteredUsers);
+  });
 
-    newSocket.on("receiveMessage", (message) => {
-      setMessages((prev) => [...prev, message]);
-       
-    });
-  
-    newSocket.on("messageHistory", (messages) => {
-      setMessages(messages);
-       setTimeout(() => {
-         if (messagesEndRef.current) {
-           messagesEndRef.current.scrollIntoView({ behavior: "auto" });
-         }
-         setIsAutoScrollEnabled(true);
-       }, 100);
-    });
-    newSocket.on("messageDeleted", ({ id }) => {
-      setMessages((prevMessages) =>
-        prevMessages.map((msg) =>
-          msg._id === id ? { ...msg, isDeleted: true, content: "" } : msg
-        )
-      );
-    });
-    // Inside your main useEffect where other socket listeners are defined
-  
+  newSocket.on("receiveMessage", (message) => {
+    setMessages((prev) => [...prev, message]);
+  });
+
+  newSocket.on("messageHistory", (messages) => {
+    setMessages(messages);
+    setTimeout(() => {
+      if (messagesEndRef.current) {
+        messagesEndRef.current.scrollIntoView({ behavior: "auto" });
+      }
+      setIsAutoScrollEnabled(true);
+    }, 100);
+  });
+  newSocket.on("messageDeleted", ({ id }) => {
+    setMessages((prevMessages) =>
+      prevMessages.map((msg) =>
+        msg._id === id ? { ...msg, isDeleted: true, content: "" } : msg
+      )
+    );
+  });
+  // Inside your main useEffect where other socket listeners are defined
+
   newSocket.on("messageUpdated", ({ messageId, content, editedAt }) => {
     setMessages((prevMessages) =>
       prevMessages.map((msg) =>
@@ -128,17 +126,16 @@ const handleMore = (id) => {
     );
   });
 
- 
-    newSocket.on("error", (error) => {
-      toast.error(error.message);
-    });
+  newSocket.on("error", (error) => {
+    toast.error(error.message);
+  });
 
-    setSocket(newSocket);
+  setSocket(newSocket);
 
-    return () => {
-      if (newSocket) newSocket.disconnect();
-    };
-  }, [userId, token ,scrollToBottom ]);
+  return () => {
+    if (newSocket) newSocket.disconnect();
+  };
+}, [userId, token, scrollToBottom]);
  
 
 const handleUpdateMessage = useCallback(
