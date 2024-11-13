@@ -1,5 +1,4 @@
-services:
-  - type: static
+- type: static
     name: my-frontend
     buildCommand: cd Frontend && npm install && npm run build
     publishDir: Frontend/dist
@@ -7,7 +6,7 @@ services:
     branch: main
     envVars:
       - key: VITE_API_URL
-        value: https://devconnect-w1w6.onrender.com
+        value: "https://devconnect-w1w6.onrender.com"
     routes:
       - type: rewrite
         source: /api/*
