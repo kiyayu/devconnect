@@ -23,7 +23,8 @@ mongoose
  
  
 // Server and Socket.io setup
-// In your backend server.js
+const port = process.env.PORT || 5004;
+const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
     // Add both development and production URLs
