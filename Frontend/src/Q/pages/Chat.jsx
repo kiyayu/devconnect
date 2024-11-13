@@ -75,12 +75,9 @@ const handleMore = (id) => {
 
 useEffect(() => {
   const newSocket = io(import.meta.env.VITE_API_URL, {
-    transports: ["websocket", "polling"],
+    transports: ["websocket"],
     auth: { token },
-    reconnection: true,
-    reconnectionAttempts: 5,
-    reconnectionDelay: 1000,
-    withCredentials: true,
+     
   });
   newSocket.on("connect", () => {});
 
