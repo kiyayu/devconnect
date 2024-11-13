@@ -2,6 +2,7 @@ import { useState, useEffect, useContext } from "react";
 import { formatDistanceToNow } from "date-fns";
 import axios from "axios";
 import { BiBarChart, BiUser, BiQuestionMark } from "react-icons/bi";
+import { toast } from "react-toastify";
 import {
   AiOutlineHeart,
   AiOutlineArrowUp,
@@ -41,9 +42,7 @@ const ContributorsList = ({ title, contributors, metric, metricLabel }) => (
           <div className="flex items-center space-x-3">
             {user.profilePicture ? (
               <img
-                src={`/${
-                  user.profilePicture
-                }`}
+                src={`${user.profilePicture}`}
                 alt="Profile"
                 className="w-10 h-10 rounded-full border-2 border-white shadow-md"
               />
@@ -426,8 +425,8 @@ const AdminDashboardContent = ({ data }) => {
  
 console.log(allAnswers);
   const renderContent = () => {
-    switch(activeTab) {
-      case 'overview':
+    switch (activeTab) {
+      case "overview":
         return (
           <>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
@@ -469,66 +468,46 @@ console.log(allAnswers);
               />
             </div>
             <div className="bg-white rounded-lg shadow p-6">
-        <h2 className="text-xl font-bold mb-4">Recent Questions</h2>
-       <div className="space-y-4">
-         {recentQuestions.map((question) => (
-        <div key={question._id} className="border-b pb-4">
-          <div className="flex items-start justify-between">
-            <div>
-              <h3 className="font-medium text-gray-800">
-                {question.title}
-              </h3>
-              <div className="flex items-center space-x-4 mt-2 text-sm text-gray-500">
-                <span>
-                  {formatDistanceToNow(new Date(question.createdAt))} ago
-                </span>
-                <span>by {question.author.name}</span>
-                <span>{question.answerCount} answers</span>
+              <h2 className="text-xl font-bold mb-4">Recent Questions</h2>
+              <div className="space-y-4">
+                {recentQuestions.map((question) => (
+                  <div key={question._id} className="border-b pb-4">
+                    <div className="flex items-start justify-between">
+                      <div>
+                        <h3 className="font-medium text-gray-800">
+                          {question.title}
+                        </h3>
+                        <div className="flex items-center space-x-4 mt-2 text-sm text-gray-500">
+                          <span>
+                            {formatDistanceToNow(new Date(question.createdAt))}{" "}
+                            ago
+                          </span>
+                          <span>by {question.author.name}</span>
+                          <span>{question.answerCount} answers</span>
+                        </div>
+                      </div>
+                      {question.author.profilePicture && (
+                        <img
+                          src={`${question.author.profilePicture}`}
+                          alt="Profile"
+                          className="w-10 h-10 rounded-full border-2 border-white shadow-md"
+                        />
+                      )}
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
-            {question.author.profilePicture && (
-              <img
-                src={`${
-                  question.author.profilePicture
-                }`}
-                alt="Profile"
-                className="w-10 h-10 rounded-full border-2 border-white shadow-md"
-              />
-            )}
-          </div>
-        </div>
-      ))}
-    </div>
-  </div>
- 
           </>
         );
-      case 'users':
+      case "users":
         return <UsersTable users={allUsers} />;
-      case 'questions':
+      case "questions":
         return <QuestionsTable questions={allQuestions} />;
-      case 'answers':
+      case "answers":
         return <AnswersTable answers={allAnswers} />;
-   case 'tags':
-      return (
-        <div className="bg-green-500 rounded-lg shadow p-6">
-          <CreateTag 
-            onTagCreated={(newTag) => {
-              // Handle the newly created tag
-              toast({
-                title: "Success",
-                description: `Tag "${newTag.name}" has been created successfully.`,
-                status: "success",
-                duration: 3000,
-                isClosable: true,
-              });
-            }} 
-          />
-          
-          {/* You can add a tag list component here if needed */}
-          
-        </div>
-      );
+      case "tags":
+        return <AdminTags tags={tags} />; // Fixed the component name and props
       default:
         return null;
     }
@@ -541,7 +520,7 @@ console.log(allAnswers);
       <div className="mb-6">
         <div className="border-b border-gray-200">
           <nav className="-mb-px flex space-x-8">
-            {['overview', 'users', 'questions', 'answers'].map((tab) => (
+            {['overview', 'users', 'questions', 'answers', "tags"].map((tab) => (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
@@ -562,7 +541,38 @@ console.log(allAnswers);
     </div>
   );
 };
+ 
+ const AdminTags = ({ tags }) => {
+  return (
+    <div className="bg-white rounded-lg shadow p-6">
+      <CreateTag
+        onTagCreated={(newTag) => {
+          // Handle the newly created tag
+          toast({
+            title: "Success",
+            description: `Tag has been created successfully.`,
+            status: "success",
+            duration: 3000,
+            isClosable: true,
+          });
+        }}
+      />
 
+      {/* Add tags list */}
+      <div className="mt-8">
+        <h2 className="text-xl font-bold mb-4">Existing Tags</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {tags && tags.map((tag) => (
+            <div key={tag._id} className="border rounded-lg p-4">
+              <h3 className="font-bold text-lg">{tag.name}</h3>
+              <p className="text-gray-600 text-sm mt-2">{tag.description}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+};
 const UsersTable = ({ users }) => (
   <div className="bg-white rounded-lg shadow overflow-hidden">
     <div className="overflow-x-auto">
