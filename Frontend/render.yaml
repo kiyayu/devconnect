@@ -7,7 +7,7 @@ services:
     branch: main
     envVars:
       - key: VITE_API_URL
-        value: "https://devconnect-w1w6.onrender.com"
+        value: https://devconnect-w1w6.onrender.com
     routes:
       - type: rewrite
         source: /*
