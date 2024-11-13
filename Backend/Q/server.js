@@ -23,8 +23,8 @@ mongoose
  
 app.use(
   cors({
-    origin: "https://devconnect-1-imto.onrender.com",
-    credentials: true,
+    origin: " * ",
+      
   })
 );
 // Server and Socket.io setup
@@ -33,7 +33,7 @@ const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
     // Update this to match your frontend domain
-    origin: ["https://devconnect-1-imto.onrender.com"],
+    origin: [" * "],
     methods: ["GET", "POST", "PUT", "DELETE"],
     credentials: true,
   },
