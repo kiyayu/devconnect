@@ -23,17 +23,19 @@ mongoose
  
  
 // Server and Socket.io setup
-const port = process.env.PORT || 5004;
-const server = http.createServer(app);
+// In your backend server.js
 const io = new Server(server, {
   cors: {
-    origin: ["https://devconnect-1-imto.onrender.com"], // This is correct now
+    // Add both development and production URLs
+    origin: [
+      "http://localhost:3000",
+      "https://devconnect-1-imto.onrender.com",
+      "https://devconnect-w1w6.onrender.com"
+    ],
     methods: ["GET", "POST", "PUT", "DELETE"],
     credentials: true,
   },
-  allowEIO3: true,
-  pingTimeout: 60000,
-  pingInterval: 25000,
+ 
 });
 // Rest of your server code remains the same
  
