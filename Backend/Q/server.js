@@ -21,19 +21,14 @@ mongoose
   .catch((error) => console.error("MongoDB connection error:", error));
 
  
-app.use(
-  cors({
-    origin: " * ",
-      
-  })
-);
+ 
 // Server and Socket.io setup
 const port = process.env.PORT || 5004;
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
     // Update this to match your frontend domain
-    origin: [" * "],
+    origin: ["https://devconnect-1-imto.onrender.com"],
     methods: ["GET", "POST", "PUT", "DELETE"],
     credentials: true,
   },
