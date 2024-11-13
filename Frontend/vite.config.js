@@ -1,18 +1,23 @@
-import { defineConfig } from "vite";
+import { defineConfig, loadEnv } from "vite";
 import react from "@vitejs/plugin-react";
 
 export default defineConfig(({ command, mode }) => {
-  const config = {
+  // Load environment variables based on the mode (development or production)
+  const env = loadEnv(mode, process.cwd(), "");
+
+  return {
     plugins: [react()],
     server: {
       proxy: {
         "/api": {
-          target: process.env.VITE_API_URL,
+          target: env.VITE_API_URL, // Uses environment variable
           changeOrigin: true,
           secure: true,
           ws: true, // Enable WebSocket proxy
         },
       },
+      port: 3000,
+      strictPort: true,
     },
     build: {
       outDir: "dist",
@@ -34,18 +39,7 @@ export default defineConfig(({ command, mode }) => {
     },
     define: {
       "process.env.NODE_ENV": JSON.stringify(mode),
-      "process.env.VITE_API_URL": JSON.stringify(process.env.VITE_API_URL),
     },
+    base: command === "build" ? "/" : "", // Use base path in production if needed
   };
-
-  if (command === "serve") {
-    // Development-specific settings
-    config.server.port = 3000;
-    config.server.strictPort = true;
-  } else {
-    // Production-specific settings
-    config.base = "/"; // or your specific base path if deployed to a subdirectory
-  }
-
-  return config;
 });

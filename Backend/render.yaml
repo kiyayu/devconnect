@@ -3,7 +3,7 @@ services:
     name: my-backend
     env: node
     buildCommand: cd Backend && npm install
-    startCommand: cd Backend/Q && npm start
+    startCommand: cd Backend && npm start
     branch: main
     envVars:
       - key: MONGO_URI

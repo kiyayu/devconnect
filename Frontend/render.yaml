@@ -2,7 +2,6 @@
     name: my-frontend
     buildCommand: cd Frontend && npm install && npm run build
     publishDir: Frontend/dist
-    staticPublishPath: /
     branch: main
     envVars:
       - key: VITE_API_URL
