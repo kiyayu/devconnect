@@ -14,7 +14,7 @@ import {
 } from "@chakra-ui/react";
 import { createTag, fetchTags } from "../services/api";
 
-const CreateTag = ({ onTagCreated }) => {
+const CreateTag = () => {
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [loading, setLoading] = useState(false);
@@ -31,11 +31,11 @@ const CreateTag = ({ onTagCreated }) => {
 
     try {
       setLoading(true);
-      const response = await createTag({ name, description });
+      const response = await createTag(name);
       setLoading(false);
       setName("");
       setDescription("");
-      onTagCreated(response.data);
+    
     } catch (err) {
       setLoading(false);
       console.error("Error creating tag:", err);

@@ -545,18 +545,7 @@ console.log(allAnswers);
  const AdminTags = ({ tags }) => {
   return (
     <div className="bg-white rounded-lg shadow p-6">
-      <CreateTag
-        onTagCreated={(newTag) => {
-          // Handle the newly created tag
-          toast({
-            title: "Success",
-            description: `Tag has been created successfully.`,
-            status: "success",
-            duration: 3000,
-            isClosable: true,
-          });
-        }}
-      />
+      <CreateTag />
 
       {/* Add tags list */}
       <div className="mt-8">

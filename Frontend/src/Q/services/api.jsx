@@ -107,7 +107,7 @@ export const deleteReaction = (reactionId) => {
 export const fetchTags = () => api.get("/tags");
 
 // Create a new tag
-export const createTag = (tagData) => api.post("/tags", tagData);
+export const createTag = (tag) => api.post("/tags", tag);
 
 // Update an existing tag
 export const updateTag = (id, tagData) => {

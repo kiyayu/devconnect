@@ -25,7 +25,7 @@ router.get("/:id", getTagById);
 // @desc    Create a new tag
 // @route   POST /api/tags
 // @access  Private (Only admins)
-router.post("/", protect, authorize("admin"), createTag);
+router.post("/", protect,  createTag);
 
 // @desc    Update an existing tag
 // @route   PUT /api/tags/:id
