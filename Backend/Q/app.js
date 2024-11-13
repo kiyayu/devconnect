@@ -7,12 +7,7 @@ const app = express();
 
 // Middleware
 app.use(express.json());
-app.use(cors({
-  origin: [
-    "https://devconnect-1-imto.onrender.com",
-  ],
-  credentials: true,
-}));
+app.use(cors());
 // Rest
  app.use("/uploads", express.static("uploads"));
 

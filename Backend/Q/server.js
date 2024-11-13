@@ -25,14 +25,7 @@ mongoose
 // Server and Socket.io setup
 const port = process.env.PORT || 5004;
 const server = http.createServer(app);
-const io = new Server(server, {
-  cors: {
-    origin:"*",
-    methods: ["GET", "POST", "PUT", "DELETE"],
-    credentials: true,
-  
-  },
-});
+const io = new Server(server,);
 
  
 const connectedUsers = new Map();
