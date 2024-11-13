@@ -1,19 +1,18 @@
 import { defineConfig, loadEnv } from "vite";
 import react from "@vitejs/plugin-react";
 
-export default defineConfig(({ command, mode }) => {
-  // Load environment variables based on the mode (development or production)
-  const env = loadEnv(mode, process.cwd(), "");
+export default defineConfig(({ mode }) => {
+  const env = loadEnv(mode, process.cwd());
 
   return {
     plugins: [react()],
     server: {
       proxy: {
         "/api": {
-          target: env.VITE_API_URL, // Uses environment variable
+          target: env.VITE_API_URL, // Proxy to backend URL in development
           changeOrigin: true,
-          secure: true,
-          ws: true, // Enable WebSocket proxy
+          secure: false,
+          ws: true, // Enables WebSocket support
         },
       },
       port: 3000,
@@ -21,25 +20,7 @@ export default defineConfig(({ command, mode }) => {
     },
     build: {
       outDir: "dist",
-      rollupOptions: {
-        output: {
-          manualChunks: {
-            vendor: [
-              "react",
-              "react-dom",
-              "react-router-dom",
-              "socket.io-client",
-            ],
-            utils: ["axios", "jwt-decode"],
-          },
-        },
-      },
-      chunkSizeWarningLimit: 1500,
-      sourcemap: command === "serve",
+      sourcemap: mode === "development",
     },
-    define: {
-      "process.env.NODE_ENV": JSON.stringify(mode),
-    },
-    base: command === "build" ? "/" : "", // Use base path in production if needed
   };
 });

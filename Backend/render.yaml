@@ -7,14 +7,12 @@ services:
     branch: main
     envVars:
       - key: MONGO_URI
-        value: "RENDER_MONGO_URI"
+        value: "YOUR_PRODUCTION_MONGO_URI"
       - key: JWT_SECRET
-        value: "RENDER_JWT_SECRET"
+        value: "YOUR_PRODUCTION_JWT_SECRET"
       - key: CLOUDINARY_CLOUD_NAME
-        value: "RENDER_CLOUDINARY_CLOUD_NAME"
+        value: "YOUR_CLOUDINARY_CLOUD_NAME"
       - key: CLOUDINARY_API_KEY
-        value: "RENDER_CLOUDINARY_API_KEY"
+        value: "YOUR_CLOUDINARY_API_KEY"
       - key: CLOUDINARY_API_SECRET
-        value: "RENDER_CLOUDINARY_API_SECRET"
-    regions:
-      - oregon
+        value: "YOUR_CLOUDINARY_API_SECRET"
