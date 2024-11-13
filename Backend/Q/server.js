@@ -27,8 +27,7 @@ const port = process.env.PORT || 5004;
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
-    // Update this to match your frontend domain
-    origin: ["https://devconnect-1-imto.onrender.com"],
+    origin: ["https://devconnect-1-imto.onrender.com"], // This is correct now
     methods: ["GET", "POST", "PUT", "DELETE"],
     credentials: true,
   },
@@ -36,7 +35,6 @@ const io = new Server(server, {
   pingTimeout: 60000,
   pingInterval: 25000,
 });
-
 // Rest of your server code remains the same
  
  

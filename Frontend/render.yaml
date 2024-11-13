@@ -1,5 +1,5 @@
 services:
-  - type: static
+ - type: static
     name: my-frontend
     buildCommand: cd Frontend && npm install && npm run build
     publishDir: Frontend/dist
@@ -7,7 +7,10 @@ services:
     branch: main
     envVars:
       - key: VITE_API_URL
-      value:https://devconnect-w1w6.onrender.com # The backend API URL for production
-  manualDeploy: true
-  regions:
-    - oregon
+        value: "https://devconnect-w1w6.onrender.com"
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+    regions:
+      - oregon
