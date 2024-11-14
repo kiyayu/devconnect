@@ -1,10 +1,11 @@
 // services/api.js
 import axios from "axios";
-import { getToken } from "../../auth"; // Adjust the path based on your project structure
+import { getToken } from "../auth"; // Adjust the path based on your project structure
 
 // Create an Axios instance with a base URL from environment variables
 const api = axios.create({
-  baseURL: `${import.meta.env.VITE_API_URL}/api`})
+  baseURL: `${import.meta.env.VITE_API_URL}/api`,
+});
 
 // Request interceptor to attach token
 api.interceptors.request.use(
@@ -33,7 +34,6 @@ api.interceptors.response.use(
 );
 
 // Chat API calls
- 
 
 // Questions API calls
 export const fetchQuestions = () => api.get("/questions");
@@ -41,7 +41,8 @@ export const fetchQuestionById = (id) => {
   if (!id) throw new Error("Question ID is required");
   return api.get(`/questions/${id}`);
 };
-export const createQuestion = (questionData) => api.post("/questions", questionData);
+export const createQuestion = (questionData) =>
+  api.post("/questions", questionData);
 export const deleteQuestion = (id) => {
   if (!id) throw new Error("Question ID is required");
   return api.delete(`/questions/${id}`);
@@ -107,10 +108,10 @@ export const deleteReaction = (reactionId) => {
 export const fetchTags = () => api.get("/tags");
 
 // Create a new tag
-export const createTag = (tag) => api.post("/tags", tag);
+export const createTag = (tagdata) => api.post("/tags", tagdata);
 
 // Update an existing tag
-export const updateTag = (id, tagData) => {
+export const updateTag = ({id, tagData}) => {
   if (!id) throw new Error("Tag ID is required");
   return api.put(`/tags/${id}`, tagData);
 };
@@ -129,7 +130,6 @@ export const updateUserProfile = (formData) => {
 //get Notifications
 export const getNotifications = (page) =>
   api.get(`/api/notifications?page=${page}`);
-export const markNotifications = () => api.post("/api/notifications/read", {}); 
-
+export const markNotifications = () => api.post("/api/notifications/read", {});
 
 export default api;

@@ -2,7 +2,7 @@ import React, { useContext, useState } from "react";
 import { AuthContext } from "../context/AuthContext";
 import { motion, AnimatePresence } from "framer-motion";
 import { Link, useNavigate } from "react-router-dom";
-import { saveToken } from "../../auth";
+import { saveToken } from "../auth";
 import { loginUser } from "../services/api";
 import {FaGoogle} from 'react-icons/fa'
 import {

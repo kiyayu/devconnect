@@ -1,6 +1,6 @@
 import React, { createContext, useState, useEffect, useCallback } from "react";
 import axios from "axios";
-import { getToken } from "../../auth";
+import { getToken } from "../auth";
 import { getNotifications, markNotifications } from "../services/api";
 export const NotificationContext = createContext();
 
@@ -20,8 +20,8 @@ export const NotificationProvider = ({ children }) => {
     try {
       setLoading(true);
       setError(null);
-      
-      const response = await  getNotifications(pageNum)
+
+      const response = await getNotifications(pageNum);
 
       const { notifications, pagination } = response.data;
       setNotifications((prev) =>
@@ -38,8 +38,7 @@ export const NotificationProvider = ({ children }) => {
 
   const markAllAsRead = async () => {
     try {
-      
-      await markNotifications()
+      await markNotifications();
 
       setNotifications((prev) =>
         prev.map((notification) => ({ ...notification, isRead: true }))

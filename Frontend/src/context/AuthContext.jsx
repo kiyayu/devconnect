@@ -1,6 +1,6 @@
 import React, { createContext, useState, useEffect } from "react";
 import { jwtDecode } from "jwt-decode"; // Corrected import
-import { saveToken, getToken, clearToken } from "../../auth";
+import { saveToken, getToken, clearToken } from "../auth";
 import axios from "axios";
 import { fetchUsers } from "../services/api";
 export const AuthContext = createContext();
@@ -9,7 +9,6 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [token, setToken] = useState(getToken());
   const [allUsers, setAllUsers] = useState([]);
-
 
   // Function to calculate token expiration and set a timeout for automatic logout
   const setAutoLogout = (exp) => {
@@ -24,8 +23,7 @@ export const AuthProvider = ({ children }) => {
 
   const fetchAllUsers = async () => {
     try {
-       
-      const response = await fetchUsers(); 
+      const response = await fetchUsers();
       setAllUsers(response.data);
     } catch (error) {
       console.error("error", error); // Corrected error logging

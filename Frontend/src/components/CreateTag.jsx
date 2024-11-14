@@ -16,7 +16,7 @@ import { createTag, fetchTags } from "../services/api";
 
 const CreateTag = () => {
   const [name, setName] = useState("");
-  const [description, setDescription] = useState("");
+  
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -31,10 +31,10 @@ const CreateTag = () => {
 
     try {
       setLoading(true);
-      const response = await createTag(name);
+      const response = await createTag({name});
       setLoading(false);
       setName("");
-      setDescription("");
+      
     
     } catch (err) {
       setLoading(false);
@@ -65,22 +65,7 @@ const CreateTag = () => {
           />
         </div>
 
-        <div className="mb-4">
-          <label
-            className="block text-gray-700 text-sm font-bold mb-2"
-            htmlFor="description"
-          >
-            Tag Description
-          </label>
-          <textarea
-            id="description"
-            className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            placeholder="Enter tag description (optional)"
-            rows="4"
-          />
-        </div>
+         
 
         {error && <div className="mb-4 text-red-500 text-sm">{error}</div>}
 

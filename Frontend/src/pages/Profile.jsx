@@ -9,7 +9,7 @@ import {
   MdAccessTime,
 } from "react-icons/md";
 import { toast } from "react-toastify";
-import { getToken } from "../../auth";
+import { getToken } from "../auth";
 import {userProfile, updateUserProfile } from "../services/api"
 import moment from "moment";
 

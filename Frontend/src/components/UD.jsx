@@ -1,4 +1,4 @@
-import { useState, useEffect, useContext } from "react";
+import { useState, useEffect, useContext, useRef } from "react";
 import { formatDistanceToNow } from "date-fns";
 import axios from "axios";
 import { BiBarChart, BiUser, BiQuestionMark } from "react-icons/bi";
@@ -9,13 +9,14 @@ import {
   AiOutlineMessage,
   AiOutlineTrophy,
 } from "react-icons/ai";
-import { GiTrophyCup } from "react-icons/gi";
-import { getToken } from "../../auth";
+import { GiFalloutShelter, GiTrophyCup } from "react-icons/gi";
+import { getToken } from "../auth";
 import { AuthContext } from "../context/AuthContext";
-import  api from "../services/api"
-import CreateTag  from "../components/CreateTag"
+import api from "../services/api";
+import CreateTag  from "./CreateTag";
+import {fetchTags, updateTag, deleteTag} from '../services/api'
 
- const StatCard = ({ title, value, icon }) => {
+const StatCard = ({ title, value, icon }) => {
   return (
     <div
       className="stat-card"
@@ -73,15 +74,13 @@ const Dashboard = () => {
     const fetchDashboardData = async () => {
       try {
         const token = getToken();
-            const endpoint =
-              user.role === "admin"
-                ? `/auth/admin-dashboard`
-                : `/auth/dashboard`;
+        const endpoint =
+          user.role === "admin" ? `/auth/admin-dashboard` : `/auth/dashboard`;
 
-            // Make the request using the appropriate endpoint
-            const response = await api.get(endpoint, {
-              headers: { Authorization: `Bearer ${token}` },
-            });
+        // Make the request using the appropriate endpoint
+        const response = await api.get(endpoint, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
         setDashboardData(response.data);
         setLoading(false);
       } catch (error) {
@@ -112,13 +111,12 @@ const Dashboard = () => {
     );
   }
 
-  return user.role === 'admin' ? (
+  return user.role === "admin" ? (
     <AdminDashboardContent data={dashboardData} />
   ) : (
     <UserDashboardContent data={dashboardData} />
   );
 };
-
 
 const UserDashboardContent = ({ data }) => {
   const [activeTab, setActiveTab] = useState("overview");
@@ -129,8 +127,7 @@ const UserDashboardContent = ({ data }) => {
     allQuestions,
     allAnswers,
   } = data;
- 
- 
+
   const renderContent = () => {
     switch (activeTab) {
       case "overview":
@@ -265,128 +262,128 @@ const UserDashboardContent = ({ data }) => {
         return null;
     }
   };
-  
-const QuestionTable = ({ questions }) => (
-  <div className="bg-white rounded-lg shadow overflow-hidden">
-    <div className="overflow-x-auto">
-      <table className="min-w-full divide-y divide-gray-200">
-        <thead className="bg-gray-50">
-          <tr>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Title
-            </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Author
-            </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Answers
-            </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Reactions
-            </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Created At
-            </th>
-          </tr>
-        </thead>
-        <tbody className="bg-white divide-y divide-gray-200">
-          {questions.map((question) => (
-            <tr key={question._id}>
-              <td className="px-6 py-4 whitespace-nowrap">
-                <div className="text-sm text-gray-900">{question.title}</div>
-              </td>
-              <td className="px-6 py-4 whitespace-nowrap">
-                <div className="flex items-center">
-                  <div className="text-sm font-medium text-gray-900">
-                    {question.author.name}
-                  </div>
-                </div>
-              </td>
-              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                {question.answers.length}
-              </td>
-              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                <div className="flex space-x-2">
-                  <span className="flex items-center">
-                    <AiOutlineHeart className="h-4 w-4 mr-1" />
-                    {question.reactionCounts?.heart || 0}
-                  </span>
-                  <span className="flex items-center">
-                    <AiOutlineArrowUp className="h-4 w-4 mr-1" />
-                    {question.reactionCounts?.upvote || 0}
-                  </span>
-                </div>
-              </td>
-              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                {formatDistanceToNow(new Date(question.createdAt))} ago
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
-  </div>
-);
 
-const AnswerTable = ({ answers }) => (
-  <div className="bg-white rounded-lg shadow overflow-hidden">
-    <div className="overflow-x-auto">
-      <table className="min-w-full divide-y divide-gray-200">
-        <thead className="bg-gray-50">
-          <tr>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Answer
-            </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Author
-            </th>
-             
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Reactions
-            </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Reward Points
-            </th>
-          </tr>
-        </thead>
-        <tbody className="bg-white divide-y divide-gray-200">
-          {answers.map((answer) => (
-            <tr key={answer._id}>
-              <td className="px-6 py-4">
-                <div className="text-sm text-gray-900">
-                  {answer.body.substring(0, 100)}...
-                </div>
-              </td>
-              <td className="px-6 py-4 whitespace-nowrap">
-                <div className="flex items-center">
-                  <div className="text-sm font-medium text-gray-900">
-                    {answer.author.name}
-                  </div>
-                </div>
-              </td>
-               
-              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                <div className="flex space-x-2">
-                  <span className="flex items-center">
-                    <AiOutlineHeart className="h-4 w-4 mr-1" />
-                    {answer.reactionCounts?.heart || 0}
-                  </span>
-                  <span className="flex items-center">
-                    <AiOutlineArrowUp className="h-4 w-4 mr-1" />
-                    {answer.reactionCounts?.upvote || 0}
-                  </span>
-                </div>
-              </td>
-              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                {answer.rewardPoints}
-              </td>
+  const QuestionTable = ({ questions }) => (
+    <div className="bg-white rounded-lg shadow overflow-hidden">
+      <div className="overflow-x-auto">
+        <table className="min-w-full divide-y divide-gray-200">
+          <thead className="bg-gray-50">
+            <tr>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Title
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Author
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Answers
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Reactions
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Created At
+              </th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody className="bg-white divide-y divide-gray-200">
+            {questions.map((question) => (
+              <tr key={question._id}>
+                <td className="px-6 py-4 whitespace-nowrap">
+                  <div className="text-sm text-gray-900">{question.title}</div>
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap">
+                  <div className="flex items-center">
+                    <div className="text-sm font-medium text-gray-900">
+                      {question.author.name}
+                    </div>
+                  </div>
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  {question.answers.length}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  <div className="flex space-x-2">
+                    <span className="flex items-center">
+                      <AiOutlineHeart className="h-4 w-4 mr-1" />
+                      {question.reactionCounts?.heart || 0}
+                    </span>
+                    <span className="flex items-center">
+                      <AiOutlineArrowUp className="h-4 w-4 mr-1" />
+                      {question.reactionCounts?.upvote || 0}
+                    </span>
+                  </div>
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  {formatDistanceToNow(new Date(question.createdAt))} ago
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
-  </div>
-);
+  );
+
+  const AnswerTable = ({ answers }) => (
+    <div className="bg-white rounded-lg shadow overflow-hidden">
+      <div className="overflow-x-auto">
+        <table className="min-w-full divide-y divide-gray-200">
+          <thead className="bg-gray-50">
+            <tr>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Answer
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Author
+              </th>
+
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Reactions
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Reward Points
+              </th>
+            </tr>
+          </thead>
+          <tbody className="bg-white divide-y divide-gray-200">
+            {answers.map((answer) => (
+              <tr key={answer._id}>
+                <td className="px-6 py-4">
+                  <div className="text-sm text-gray-900">
+                    {answer.body.substring(0, 100)}...
+                  </div>
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap">
+                  <div className="flex items-center">
+                    <div className="text-sm font-medium text-gray-900">
+                      {answer.author.name}
+                    </div>
+                  </div>
+                </td>
+
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  <div className="flex space-x-2">
+                    <span className="flex items-center">
+                      <AiOutlineHeart className="h-4 w-4 mr-1" />
+                      {answer.reactionCounts?.heart || 0}
+                    </span>
+                    <span className="flex items-center">
+                      <AiOutlineArrowUp className="h-4 w-4 mr-1" />
+                      {answer.reactionCounts?.upvote || 0}
+                    </span>
+                  </div>
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  {answer.rewardPoints}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
   return (
     <div className="container mx-auto px-4 py-8">
       <h1 className="text-2xl font-bold mb-6">User Dashboard</h1>
@@ -416,14 +413,21 @@ const AnswerTable = ({ answers }) => (
   );
 };
 
-
 // First, let's modify the AdminDashboardContent component to include tabs and new tables
 
 const AdminDashboardContent = ({ data }) => {
-  const [activeTab, setActiveTab] = useState('overview');
-  const { platformStats, topContributors, recentQuestions, allUsers, allQuestions, allAnswers, tags } = data;
+  const [activeTab, setActiveTab] = useState("overview");
+  const {
+    platformStats,
+    topContributors,
+    recentQuestions,
+    allUsers,
+    allQuestions,
+    allAnswers,
+    tags,
+  } = data;
+
  
-console.log(allAnswers);
   const renderContent = () => {
     switch (activeTab) {
       case "overview":
@@ -516,23 +520,25 @@ console.log(allAnswers);
   return (
     <div className="container mx-auto px-4 py-8">
       <h1 className="text-2xl font-bold mb-6">Admin Dashboard</h1>
-      
+
       <div className="mb-6">
         <div className="border-b border-gray-200">
           <nav className="-mb-px flex space-x-8">
-            {['overview', 'users', 'questions', 'answers', "tags"].map((tab) => (
-              <button
-                key={tab}
-                onClick={() => setActiveTab(tab)}
-                className={`${
-                  activeTab === tab
-                    ? 'border-blue-500 text-blue-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm capitalize`}
-              >
-                {tab}
-              </button>
-            ))}
+            {["overview", "users", "questions", "answers", "tags"].map(
+              (tab) => (
+                <button
+                  key={tab}
+                  onClick={() => setActiveTab(tab)}
+                  className={`${
+                    activeTab === tab
+                      ? "border-blue-500 text-blue-600"
+                      : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                  } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm capitalize`}
+                >
+                  {tab}
+                </button>
+              )
+            )}
           </nav>
         </div>
       </div>
@@ -541,38 +547,179 @@ console.log(allAnswers);
     </div>
   );
 };
- 
- const AdminTags = ({ tags }) => {
-  return (
-    <div className="bg-white rounded-lg shadow p-6">
-      <CreateTag />
 
-      {/* Add tags list */}
-      <div className="mt-8">
-        <h2 className="text-xl font-bold mb-4">Existing Tags</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {tags && tags.map((tag) => (
-            <div key={tag._id} className="border rounded-lg p-4">
-              <h3 className="font-bold text-lg">{tag.name}</h3>
-              <p className="text-gray-600 text-sm mt-2">{tag.description}</p>
+const AdminTags = () => {
+  const [allTags, setAllTags] = useState([]);
+  const [editedTag, setEditedTag] = useState(null);
+  const [currentTagId, setCurrentTagId] = useState(null);
+  const [name, setName] = useState("");
+  const containerRef = useRef(null);
+
+  // Fetch all tags from the backend
+  const fetchAllTags = async () => {
+    try {
+      const response = await fetchTags();
+      setAllTags(response.data);
+    } catch (error) {
+      console.error("Error fetching tags:", error);
+    }
+  };
+
+  // Handle form submission for updating a tag
+  const handleSubmitUpdate = async (e) => {
+    e.preventDefault();
+    try {
+      await updateTag({ id: editedTag, tagData: { name } });
+      fetchAllTags();
+      setEditedTag(null);
+      setCurrentTagId(null);
+      setName("");
+    } catch (error) {
+      console.error("Error updating tag:", error);
+    }
+  };
+
+  // Enter edit mode and pre-fill the form with current tag name
+  const handleUpdate = (tag) => {
+    setEditedTag(tag._id);
+    setName(tag.name);
+    setCurrentTagId(null);
+  };
+
+  // Toggle display of update and delete buttons
+  const handleTagClick = (tagId) => {
+    setCurrentTagId((prevId) => (prevId === tagId ? null : tagId));
+  };
+
+  // Delete a tag and refresh the list
+  const handleDelete = async (id) => {
+    try {
+      await deleteTag(id);
+      fetchAllTags();
+      setCurrentTagId(null);
+    } catch (error) {
+      console.error("Error deleting tag:", error);
+    }
+  };
+
+  // Handle click outside of tag component to hide buttons
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (
+        containerRef.current &&
+        !containerRef.current.contains(event.target)
+      ) {
+        setCurrentTagId(null);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
+  useEffect(() => {
+    fetchAllTags();
+  }, []);
+
+  return (
+    <div
+      ref={containerRef}
+      className="bg-white rounded-lg shadow p-6 flex gap-3 w-full h-64"
+    >
+      <div ref={containerRef} className="flex-[.5]">
+        <CreateTag />
+      </div>
+      <div ref={containerRef} className="flex flex-1 overflow-auto">
+        {allTags.length > 0 &&
+          allTags.map((tag) => (
+            <div key={tag._id} className="p-3 shadow-lg self-start">
+              {editedTag === tag._id ? (
+                <form onSubmit={handleSubmitUpdate}>
+                  <input
+                    type="text"
+                    value={name}
+                    placeholder="Tag name"
+                    onChange={(e) => setName(e.target.value)}
+                  />
+                  <div className="flex gap-3">
+                    <button
+                      type="submit"
+                      className="text-sm bg-green-500 p-2 rounded-lg"
+                    >
+                      Submit Update
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setEditedTag(null);
+                        setCurrentTagId(null);
+                        setName("");
+                      }}
+                      className="text-sm p-2 rounded-lg bg-red-500 text-white"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </form>
+              ) : (
+                <>
+                  <p
+                    onClick={() => handleTagClick(tag._id)}
+                    className="p-2 rounded-lg bg-green-500 cursor-pointer"
+                  >
+                    {tag.name}
+                  </p>
+
+                  {tag._id === currentTagId && (
+                    <div className="flex w-36 py-2 justify-between items-center gap-3">
+                      <button
+                        onClick={() => handleUpdate(tag)}
+                        className="bg-white text-sm p-3 shadow-lg border rounded-lg text-green-500"
+                      >
+                        Update
+                      </button>
+                      <button
+                        onClick={() => handleDelete(tag._id)}
+                        className="bg-white text-sm p-3 shadow-lg border rounded-lg text-red-500"
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  )}
+                </>
+              )}
             </div>
           ))}
-        </div>
       </div>
     </div>
   );
 };
+
+
+
 const UsersTable = ({ users }) => (
   <div className="bg-white rounded-lg shadow overflow-hidden">
     <div className="overflow-x-auto">
       <table className="min-w-full divide-y divide-gray-200">
         <thead className="bg-gray-50">
           <tr>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">User</th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Questions</th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Answers</th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Reactions</th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Reward Points</th>
+            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              User
+            </th>
+            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              Questions
+            </th>
+            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              Answers
+            </th>
+            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              Reactions
+            </th>
+            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              Reward Points
+            </th>
           </tr>
         </thead>
         <tbody className="bg-white divide-y divide-gray-200">
@@ -592,7 +739,9 @@ const UsersTable = ({ users }) => (
                     </div>
                   )}
                   <div className="ml-4">
-                    <div className="text-sm font-medium text-gray-900">{user.name}</div>
+                    <div className="text-sm font-medium text-gray-900">
+                      {user.name}
+                    </div>
                     <div className="text-sm text-gray-500">{user.email}</div>
                   </div>
                 </div>
@@ -623,11 +772,21 @@ const QuestionsTable = ({ questions }) => (
       <table className="min-w-full divide-y divide-gray-200">
         <thead className="bg-gray-50">
           <tr>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Title</th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Author</th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Answers</th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Reactions</th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Created At</th>
+            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              Title
+            </th>
+            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              Author
+            </th>
+            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              Answers
+            </th>
+            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              Reactions
+            </th>
+            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              Created At
+            </th>
           </tr>
         </thead>
         <tbody className="bg-white divide-y divide-gray-200">
@@ -675,18 +834,30 @@ const AnswersTable = ({ answers }) => (
       <table className="min-w-full divide-y divide-gray-200">
         <thead className="bg-gray-50">
           <tr>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Answer</th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Author</th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Question</th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Reactions</th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Reward Points</th>
+            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              Answer
+            </th>
+            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              Author
+            </th>
+            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              Question
+            </th>
+            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              Reactions
+            </th>
+            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              Reward Points
+            </th>
           </tr>
         </thead>
         <tbody className="bg-white divide-y divide-gray-200">
           {answers.map((answer) => (
             <tr key={answer._id}>
               <td className="px-6 py-4">
-                <div className="text-sm text-gray-900">{answer.body.substring(0, 100)}...</div>
+                <div className="text-sm text-gray-900">
+                  {answer.body.substring(0, 100)}...
+                </div>
               </td>
               <td className="px-6 py-4 whitespace-nowrap">
                 <div className="flex items-center">
@@ -720,5 +891,5 @@ const AnswersTable = ({ answers }) => (
     </div>
   </div>
 );
- 
+
 export default Dashboard;
