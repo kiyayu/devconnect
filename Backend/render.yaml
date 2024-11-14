@@ -2,9 +2,9 @@ services:
   - type: web
     name: my-backend
     env: node
+    branch: main
     buildCommand: cd Backend && npm install
     startCommand: cd Backend && npm start
-    branch: main
     envVars:
       - key: MONGO_URI
         sync: false
@@ -19,4 +19,4 @@ services:
     headers:
       - path: /*
         name: Access-Control-Allow-Origin
-        value: https://devconnect-1-imto.onrender.com
+        value: https://devconnect-1-imto.onrender.com  # Replace with your frontend URL if needed

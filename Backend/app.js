@@ -7,7 +7,9 @@ const app = express();
 
 // Middleware
 app.use(express.json());
-app.use(cors());
+const cors = require('cors');
+app.use(cors({ origin: "https://devconnect-w1w6.onrender.com" }));
+
 // Rest
  app.use("/uploads", express.static("uploads"));
 

@@ -1,13 +1,10 @@
 services:
-  - type: static
+  - type: web
     name: my-frontend
-    buildCommand: cd Frontend && npm install && npm run build
-    publishDir: Frontend/dist
+    env: static
     branch: main
+    buildCommand: "npm install && npm run build"
+    staticPublishPath: "build"
     envVars:
       - key: VITE_API_URL
-        value: "https://devconnect-w1w6.onrender.com"
-    headers:
-      - path: /*
-        name: Cache-Control
-        value: no-cache
+        value: "https://devconnect-w1w6.onrender.com" # Replace with your actual backend URL
