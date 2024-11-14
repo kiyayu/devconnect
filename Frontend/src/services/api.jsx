@@ -4,7 +4,7 @@ import { getToken } from "../auth"; // Adjust the path based on your project str
 
 // Create an Axios instance with a base URL from environment variables
 const api = axios.create({
-  baseURL: "https://devconnect-w1w6.onrender.com/api", // Use the direct URL here
+  baseURL: `${import.meta.env.VITE_API_URL}/api`,
 });
 
 // Request interceptor to attach token
