@@ -76,7 +76,7 @@ const handleMore = (id) => {
 };
 
 useEffect(() => {
-  const newSocket = io(import.meta.env.VITE_API_URLl, {
+  const newSocket = io(import.meta.env.VITE_API_URL, {
     transports: ["websocket"],
     auth: { token },
      
