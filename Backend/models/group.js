@@ -7,6 +7,7 @@ const groupSchema = new mongoose.Schema({
     { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
   ],
   picture: String,
+  groupIcon: { type: String, default: null },
   createdAt: { type: Date, default: Date.now },
 });
 

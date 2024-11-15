@@ -2,7 +2,7 @@ import React, { useEffect, useState, useCallback, useRef } from "react";
 import { io } from "socket.io-client";
 import { getToken } from "../auth";
 import { jwtDecode } from "jwt-decode";
-import api from "../services/api";
+ 
 import { toast } from "react-toastify";
 import { Link } from "react-router-dom"
 import axios from "axios";
@@ -10,9 +10,10 @@ import { motion, AnimatePresence } from "framer-motion";
 import { IoSend, IoAddCircle, IoClose } from "react-icons/io5";
 import { FiUsers, FiMessageCircle, FiMenu, FiArrowDownLeft, FiArrowLeft } from "react-icons/fi";
 import { BsImage } from "react-icons/bs";
-import { MdAttachEmail, MdAttachFile, MdAttachment, MdDelete, MdEdit, MdReadMore, MdMore, } from "react-icons/md";
+import { MdAttachEmail, MdAttachFile, MdAttachment, MdDelete, MdEdit,   MdMore,   MdMoreHoriz, MdSignalCellularNull, } from "react-icons/md";
 import EmojiPicker from 'emoji-picker-react';
 import { formatDistanceToNow } from "date-fns";
+import {createGroup, getGroup, deleteGroup} from "../services/api"
 const Chat = () => {
   // State declarations
   const [socket, setSocket] = useState(null);
@@ -30,9 +31,10 @@ const Chat = () => {
   const [activeMobilePanel, setActiveMobilePanel] = useState(null);
   const [groupIcon, setGroupIcon] = useState(null);
   const [editingMessage, setEditingMessage] = useState(null);
-     const messagesContainerRef = useRef(null);
-     const [isAutoScrollEnabled, setIsAutoScrollEnabled] = useState(true);
+  const messagesContainerRef = useRef(null);
+  const [isAutoScrollEnabled, setIsAutoScrollEnabled] = useState(true);
   const [moreId, setMoreId] = useState(null)
+  const [groupId, setGroupId] = useState(null)
 
 
    
@@ -74,7 +76,7 @@ const handleMore = (id) => {
 };
 
 useEffect(() => {
-  const newSocket = io(import.meta.env.VITE_API_URL, {
+  const newSocket = io(import.meta.env.VITE_API_URLl, {
     transports: ["websocket"],
     auth: { token },
      
@@ -165,7 +167,7 @@ const handleUpdateMessage = useCallback(
         const formData = new FormData();
         formData.append("file", file); // Append the file to the FormData
         // Ensure you have the correct function to retrieve the token
-
+       console.log(formData.name)
         try {
           const response = await api.post("/files/upload",
             formData,
@@ -220,20 +222,22 @@ const handleEmojiClick = (event, emojiObject) => {
 
  
   const handleGroup = async () => {
+    const formData = new FormData()
+    formData.append("name", name)
+    if(groupIcon){  
+    formData.append("groupIcon", groupIcon)}
     try {
       
       if (!name.trim()) {
         toast.error("Please enter a group name");
         return;
       }
-
-      const response = await api.post(
-        `/api/create`,
-        { name },
-      );
+     
+      const response = await createGroup(formData)
 
       toast.success("Group created successfully");
       setName("");
+      setGroupIcon(null)
       fetchGroups();
     } catch (error) {
       console.error("Error creating group:", error);
@@ -245,9 +249,8 @@ const handleEmojiClick = (event, emojiObject) => {
   };
   const fetchGroups = useCallback(async () => {
     try {
-      const response = await api.get("/groups", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const response = await getGroup()
+      
       setGroups(response.data);
     } catch (error) {
       console.error("Error fetching groups:", error);
@@ -268,8 +271,22 @@ const handleEmojiClick = (event, emojiObject) => {
 
   useEffect(() => {
     fetchGroups();
-  }, [fetchGroups]);
+  }, []);
 
+  const handleGroupDelete = async (id) => {
+    try{ 
+     
+     const response =  await deleteGroup(id); // Call your delete API function
+      toast.success("Group deleted successfully"); // Provide user feedback
+      fetchGroups(); // Refresh the groups list
+      setGroupId(null);
+    }
+    catch (error) {
+      console.error("error", error)
+      alert("delete error")
+    }
+
+  }
   const toggleMobilePanel = (panel) => {
     if (activeMobilePanel === panel) {
       setActiveMobilePanel(null);
@@ -328,20 +345,43 @@ const handleEmojiClick = (event, emojiObject) => {
                 <div
                   key={group._id}
                   onClick={() => joinRoom(group._id, group.name)}
-                  className={`cursor-pointer p-3 rounded-xl transition-all duration-200 ${
+                  className={`cursor-pointer relative p-3 rounded-xl transition-all duration-200 ${
                     selectedRoom === group._id
                       ? "bg-indigo-50 border-l-4 border-indigo-600"
                       : "hover:bg-gray-50"
                   }`}
                 >
-                  <p className="font-medium text-gray-700 flex gap">
-                    <img
-                      src={`  ${group.admin.profilePicture}`}
-                      alt="Profile"
-                      className="w-5 h-5 rounded-full border-2 border-white shadow-md"
-                    />
-                    {group.name}
+                  <p  className="font-medium  flex justify-between items-center  text-gray-700  gap">
+                    <span>
+                      {" "}
+                      {group.groupIcon && (  <img
+                        src={`  ${group.groupIcon}`}
+                        alt="Profile"
+                        className="w-5 h-5 rounded-full border-2 border-white shadow-md"
+                      /> )}
+                     
+                      {group.name}
+                    </span>
+                    <span onClick={() => setGroupId(group._id)}>
+                      {" "}
+                      <MdMoreHoriz />{" "}
+                    </span>
                   </p>
+                  {groupId === group._id && (
+                    <div className="  shadow-lg rounded-lg flex flex-col gap-3 p-5 bg-slate-500 w-25 absolute top-0 right-8">
+                       <span onClick={() => setGroupId(null)} className="text-center text-white text-sm absolute top-0 right-1">x</span>
+                     <button className="text-sm text-green-500 rounded-lg shadow  shadow-white px-2 py-1">
+                        Invite
+                      </button> 
+                      <button
+                        onClick={() => handleGroupDelete(group._id)}
+                        className="text-sm px-1 text-red-700 rounded-lg shadow  shadow-orange-400 py-1"
+                      >
+                        Delete
+                      </button>
+                      
+                    </div>
+                  )}
                 </div>
               ))}
             </div>
@@ -492,9 +532,9 @@ const handleEmojiClick = (event, emojiObject) => {
                         <div className="relative   z-10">
                           <div
                             onClick={() => handleMore(msg._id)}
-                            className=" relative  hover:bg-gray-200 rounded-full cursor-pointer transition-colors"
+                            className=" relative rounded-full cursor-pointer transition-colors"
                           >
-                            <MdMore className="text-gray-600 text-xl" />
+                            <MdMoreHoriz className="text-gray-600 text-xl hover:text-white" />
                           </div>{" "}
                         </div>
                       )}
@@ -526,7 +566,6 @@ const handleEmojiClick = (event, emojiObject) => {
                 </motion.div>
               ))}
             </AnimatePresence>
-            <div ref={messagesEndRef} style={{ height: "1px" }} />
           </div>
 
           {/* Message Input */}
@@ -797,6 +836,7 @@ const handleEmojiClick = (event, emojiObject) => {
                   whileTap={{ scale: 0.95 }}
                   onClick={handleGroup}
                   className="w-full bg-indigo-600 text-white px-4 py-3 rounded-xl hover:bg-indigo-700"
+                  type="submit"
                 >
                   Create Group
                 </motion.button>

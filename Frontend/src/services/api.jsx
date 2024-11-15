@@ -4,7 +4,7 @@ import { getToken } from "../auth"; // Adjust the path based on your project str
 
 // Create an Axios instance with a base URL from environment variables
 const api = axios.create({
-  baseURL: `${import.meta.env.VITE_API_URL}/api`,
+  baseURL: `${import.meta.env.VITE_API_URLl}/api`,
 });
 
 // Request interceptor to attach token
@@ -110,6 +110,7 @@ export const fetchTags = () => api.get("/tags");
 // Create a new tag
 export const createTag = (tagdata) => api.post("/tags", tagdata);
 
+
 // Update an existing tag
 export const updateTag = ({id, tagData}) => {
   if (!id) throw new Error("Tag ID is required");
@@ -121,6 +122,16 @@ export const deleteTag = (id) => {
   if (!id) throw new Error("Tag ID is required");
   return api.delete(`/tags/${id}`);
 };
+
+
+// crate gorup
+export const createGroup = (name) => api.post("/create", name)
+
+// get group
+export const getGroup = () => api.get("/groups")
+
+// delete group
+export const deleteGroup = (id) => api.delete(`/group/${id}`)
 
 // Update user profile
 export const updateUserProfile = (formData) => {

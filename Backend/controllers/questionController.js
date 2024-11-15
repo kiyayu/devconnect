@@ -265,6 +265,7 @@ const updateQuestion = async (req, res) => {
     return res.status(400).json({ message: "Invalid question ID" });
   }
 
+  
   try {
     const question = await Question.findById(id);
     if (!question) {

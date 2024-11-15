@@ -6,7 +6,7 @@ const NotificationSchema = new mongoose.Schema(
     type: {
       type: String,
       enum: ["question", "answer", "message"],
-      required: true,
+      required: true,   
     },
     contentSummary: { type: String, required: true }, // Made required
     contentLink: { type: mongoose.Schema.Types.ObjectId },
