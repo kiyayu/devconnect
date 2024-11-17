@@ -1,37 +1,45 @@
 const express = require("express");
-const {
-  getAllConnections,
-  followUser,
-  unfollowUser,
-  getFollowers,
-  getFollowing,
-} = require("../controllers/connectionController");
-const protect = require("../middleware/authMiddleware"); // Ensure you have a protect middleware for authentication
 const router = express.Router();
+const {
+  sendFriendRequest,
+  acceptFriendRequest,
+  removeFriend,
+  blockUser,
+  getFriends,
+  getPendingRequests,
+  getSentRequests,
+  getBlockedUsers,getConnectionStatus, getMutualFriends, getUserActivity, 
+} = require("../controllers/connectionController");
 
-// @desc    Get all connections (followers and following) for a user
-// @route   GET /api/users/:id/connections
-// @access  Private
-router.get("/:id/connections", protect, getAllConnections);
+// Middleware for authentication (assuming you have an auth middleware)
+const authMiddleware = require("../middleware/authMiddleware");
 
-// @desc    Follow a user
-// @route   POST /api/users/:id/follow
-// @access  Private
-router.post("/:id/follow", protect, followUser);
+// Routes
+// Send a friend request
+router.post("/:id/request", authMiddleware, sendFriendRequest);
 
-// @desc    Unfollow a user
-// @route   DELETE /api/users/:id/unfollow
-// @access  Private
-router.delete("/:id/unfollow", protect, unfollowUser);
+// Accept a friend request
+router.post("/:id/accept", authMiddleware, acceptFriendRequest);
 
-// @desc    Get followers of the user
-// @route   GET /api/users/:id/followers
-// @access  Private
-router.get("/:id/followers", protect, getFollowers);
+// Remove a friend
+router.delete("/:id/remove", authMiddleware, removeFriend);
 
-// @desc    Get users followed by the user
-// @route   GET /api/users/:id/following
-// @access  Private
-router.get("/:id/following", protect, getFollowing);
+// Block a user
+router.post("/:id/block", authMiddleware, blockUser);
+
+// Get friends list
+router.get("/:id/friends", authMiddleware, getFriends);
+
+// Get pending friend requests
+router.get("/requests/pending", authMiddleware, getPendingRequests);
+
+// Get sent friend requests
+router.get("/:id/requests/sent", authMiddleware, getSentRequests);
+
+// Get blocked users
+router.get("/:id/blocked", authMiddleware, getBlockedUsers);
+router.get("/:id/status", authMiddleware, getConnectionStatus);
+router.get("/:id/mutual-friends", authMiddleware, getMutualFriends);
+router.get("/:id/activity", authMiddleware, getUserActivity);
 
 module.exports = router;

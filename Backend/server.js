@@ -6,9 +6,9 @@ const http = require("http");
 const { Server } = require("socket.io");
 const jwt = require("jsonwebtoken");
 const path = require("path")
-dotenv.config();
+dotenv.config();  
 
-const app = require("./app");
+const app = require("./app"); 
 const User = require("./models/User"); 
 const Message = require("./models/Message");
 const Group = require("./models/group");
@@ -43,9 +43,10 @@ io.use((socket, next) => {
 
 io.on("connection", async (socket) => {
   
-
+ const user = await User.findById(socket.userId);
+ 
   try {
-    const user = await User.findById(socket.userId);
+   
     if (user) {
       connectedUsers.set(socket.userId, {
         _id: socket.userId,
@@ -113,7 +114,7 @@ io.on("connection", async (socket) => {
   });
 
   // Add this to your socket.io server code
-socket.on("updateMessage", async (data) => {
+ socket.on("updateMessage", async (data) => {
   const { messageId, content } = data;
 
   try {
@@ -162,7 +163,7 @@ socket.on("updateMessage", async (data) => {
       details: error.message,
     });
   }
-});
+ });
 
   socket.on("sendMessage", async (data) => {
     const { roomId, content, file } = data; // Include the file parameter
@@ -218,11 +219,21 @@ socket.on("updateMessage", async (data) => {
     }
   });
 
-  socket.on("disconnect", () => {
-     
-    connectedUsers.delete(socket.userId);
-    io.emit("updated_users", Array.from(connectedUsers.values()));
+socket.on("disconnect", async () => {
+  connectedUsers.delete(socket.userId);
+  const user = await User.findById(socket.userId);
+  if (user) {
+    user.lastSeen = new Date();
+    await user.save();
+  }
+
+  // Fetch updated user data for all connected users
+  const updatedUsers = await User.find({
+    _id: { $in: Array.from(connectedUsers.keys()) },
   });
+
+  io.emit("updated_users", updatedUsers);
+});
 });
 
  

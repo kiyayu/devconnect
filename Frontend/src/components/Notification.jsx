@@ -3,13 +3,12 @@ import { Link } from "react-router-dom"; // Import Link
 import { NotificationContext } from "../context/NotificationContext";
 import InfiniteScroll from "react-infinite-scroll-component";
 import { useNavigate } from "react-router-dom";
+import IncomingRequests from "./IncomingRequests";
 const NotificationItem = ({ notification }) => {
   const navigate = useNavigate();
  
 
-  const handleProfileClick = () => {
-    navigate(`/profile/${notification.user._id}`);
-  };
+ 
 return  (
    
   <div className="p-4 border-b hover:bg-gray-50 transition-colors duration-150 ease-in-out">
@@ -18,7 +17,7 @@ return  (
         <div className="flex items-center">
           {" "}
           {/* Flexbox for aligning profile and name */}
-          <Link  onClick={handleProfileClick}>
+          <Link   >
             {" "}
             {/* Link to user profile */}
             <img
@@ -104,6 +103,7 @@ const Notification = () => {
           />
         ))}
       </InfiniteScroll>
+      <IncomingRequests />
 
       {loading && notifications.length === 0 && (
         <div className="p-4 text-center">Loading notifications...</div>

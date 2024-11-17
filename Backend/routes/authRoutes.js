@@ -8,7 +8,7 @@ const {
   getAllUsers,
   getOnlineUsers,
  getAdminDashboardData,
- getUserDashboardData
+ getUserDashboardData, getMe
 } = require("../controllers/authController");
 const protect = require("../middleware/authMiddleware"); // Ensure you have a protect middleware for authentication
 const profileUpload = require("../middleware/profileUpload");
@@ -19,7 +19,7 @@ const router = express.Router();
 // @route   POST /api/auth/register
 // @access  Public
 router.post("/register", profileUpload.single("profilePicture"), createUser);
-
+router.get("/me", protect, getMe)
 // @desc    Login a user
 // @route   POST /api/auth/login
 // @access  Public

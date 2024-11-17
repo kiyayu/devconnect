@@ -220,14 +220,14 @@ const Register = () => {
                             className="text-sm text-gray-600"
                           >
                             I agree to the{" "}
-                            <a
-                              href="/terms"
+                            <Link
+                              to="/terms-and-conditions"
                               className="text-blue-600 hover:text-blue-800"
                               target="_blank"
                               rel="noopener noreferrer"
                             >
                               Terms and Conditions
-                            </a>
+                            </Link>
                           </label>
                         </div>
                       </>

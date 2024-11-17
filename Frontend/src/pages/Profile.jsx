@@ -10,8 +10,9 @@ import {
 } from "react-icons/md";
 import { toast } from "react-toastify";
 import { getToken } from "../auth";
-import {userProfile, updateUserProfile } from "../services/api"
+import { userProfile, updateUserProfile } from "../services/api";
 import moment from "moment";
+import IncomingRequests from "../components/IncomingRequests";
 
 const Profile = () => {
   const [user, setUser] = useState({
@@ -41,8 +42,7 @@ const Profile = () => {
   useEffect(() => {
     const fetchUser = async () => {
       try {
-       
-        const response = await userProfile()
+        const response = await userProfile();
         setUser(response.data);
         setFormData({
           name: response.data.name || "",
@@ -100,7 +100,7 @@ const Profile = () => {
         }
       });
 
-      const response = await updateUserProfile(formDataToSend)
+      const response = await updateUserProfile(formDataToSend);
 
       setUser(response.data);
       setEditing(false);
@@ -275,6 +275,7 @@ const Profile = () => {
             </div>
           )}
         </div>
+        <IncomingRequests />
       </div>
     </div>
   );

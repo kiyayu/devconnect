@@ -5,6 +5,16 @@ const path = require("path");
 const mongoose = require("mongoose");
 const Question = require("../models/Question");
 
+const getMe = async (req, res) =>{
+  try{
+    const userId = req.userId;
+    const user = await User.findById(userId)
+     res.json(user)
+  }
+  catch (error) {
+    console.log("error", error)
+  }
+}
 /**
  * @desc    Register a new user
  * @route   POST /api/auth/register
@@ -230,7 +240,7 @@ const addFriend = async (req, res) => {
 
     if (!mongoose.isValidObjectId(friendId)) {
       return res.status(400).json({ message: "Invalid friend ID" });
-    }
+    }  
 
     const user = await User.findById(userId);
     const friend = await User.findById(friendId);
@@ -488,4 +498,5 @@ module.exports = {
   getOnlineUsers,
   getAllUsers,
   addFriend,
+  getMe,
 };

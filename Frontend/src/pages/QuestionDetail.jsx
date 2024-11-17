@@ -10,7 +10,7 @@ import { AuthContext } from "../context/AuthContext";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { Link } from "react-router-dom";
-
+import Connection from "../components/Connection";
 const QuestionDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -27,7 +27,21 @@ const QuestionDetail = () => {
   const [answerId, setAnserId] = useState(null);
   const [editMode, setEditMode] = useState(false);
   const [editableAnswerId, setEditableAnswerId] = useState(null);
+     const [selectedUser, setSelectedUser] = useState(null);
 
+     const [showProfile, setShowProfile] = useState(false);
+     const hanldeShowProfile = async (userId) => {
+       console.log("Fetching user ID:", userId); // Add this to check the ID
+       try {
+         const response = await api.get(`/auth/users/${userId}`);
+         const data = await response.data; // Correctly retrieve data (not `response.json()`)
+         console.log("Fetched user data:", data); // Add this to debug the response
+         setSelectedUser(data);
+         setShowProfile(true);
+       } catch (error) {
+         console.error("Error fetching user details:", error);
+       }
+     };
   // update  PUT /api/questions/:questionId/answers/:answerId
   // DELETE /api/questions/:questionId/answers/:answerId
  
@@ -238,9 +252,10 @@ const handleEditAnswer = (answer) => {
             <div>
               <h2 className="text-2xl font-semibold">{question.title}</h2>
               <p className="text-sm text-gray-500">
-                Asked by {question.author?.name || "Unknown"}  
-               <span> </span> <span>
-                  {formatDistanceToNow(new Date( question.createdAt))} ago
+                Asked by {question.author?.name || "Unknown"}
+                <span> </span>{" "}
+                <span>
+                  {formatDistanceToNow(new Date(question.createdAt))} ago
                 </span>
               </p>
             </div>
@@ -305,6 +320,12 @@ const handleEditAnswer = (answer) => {
               <span className="ml-1">{question.answerCount} Answers</span>
             </Link>
           </div>
+          {showProfile && (
+            <Connection
+              user={selectedUser}
+              close={() => setShowProfile(false)}
+            />
+          )}
 
           {/* Answers Section */}
           <h3 className="text-xl font-semibold mb-4">Answers</h3>
@@ -313,7 +334,7 @@ const handleEditAnswer = (answer) => {
               question.answers.map((answer) => (
                 <div key={answer._id} className="bg-white p-4 rounded shadow">
                   <div className="flex items-center mb-2">
-                    <img
+                    <img onClick={() => hanldeShowProfile(answer.author._id)}
                       src={
                         answer.author?.profilePicture
                           ? ` ${answer.author.profilePicture}`

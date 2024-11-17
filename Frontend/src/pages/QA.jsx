@@ -20,13 +20,14 @@ import {
 } from "../services/api"; // Ensure these functions are correctly implemented
 import { Link } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext"; // Ensure AuthContext provides user info
- import { formatDistanceToNow } from "date-fns";
+import { formatDistanceToNow } from "date-fns";
 import { toast } from "react-toastify"; // Import toast from React Toastify
 import "react-toastify/dist/ReactToastify.css"; // Import React Toastify CSS
 import UpdateQuestionModal from "./UpdateQuestionModal";
 import api from '../services/api'
- import { FaFilter, FaTimes } from "react-icons/fa";
- import { FaSearch } from "react-icons/fa";
+import { FaFilter, FaTimes } from "react-icons/fa";
+import { FaSearch } from "react-icons/fa";
+import Connection from "../components/Connection";
 
 const Sidebar = ({
   tags,
@@ -64,7 +65,7 @@ const Sidebar = ({
       className={`
         ${isMobileOpen ? "fixed" : "hidden"}
         md:fixed md:block
-        w-64 bg-white shadow-md p-4 h-[90vh] left-0 top-0 
+        w-52 bg-white text-sm shadow-md p-4 h-[90vh] left-0 top-[9vh]
         overflow-y-auto z-50
         transition-transform duration-300 ease-in-out
       `}
@@ -201,6 +202,23 @@ const QA = () => {
   const [reactingTo, setReactingTo] = useState(null);
     const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
     const [selectedTags, setSelectedTags] = useState([]);
+    const [selectedUser, setSelectedUser] = useState(null);
+    
+      const [showProfile, setShowProfile] = useState(false);
+   const hanldeShowProfile = async (userId) => {
+     console.log("Fetching user ID:", userId); // Add this to check the ID
+     try {
+       const response = await api.get(`/auth/users/${userId}`);
+       const data = await response.data; // Correctly retrieve data (not `response.json()`)
+       console.log("Fetched user data:", data); // Add this to debug the response
+       setSelectedUser(data);
+       setShowProfile(true);
+     } catch (error) {
+       console.error("Error fetching user details:", error);
+     }
+   };
+
+
   // Enhanced search function
   const handleSearch = (term) => {
     setSearchTerm(term);
@@ -483,6 +501,9 @@ const QA = () => {
       >
         <FaFilter size={20} />
       </button>
+      {showProfile && (
+        <Connection user={selectedUser} close={() => setShowProfile(false)} />
+      )}
 
       {/* Sidebar */}
       <Sidebar
@@ -696,6 +717,7 @@ const QA = () => {
                   {/* Author Information */}
                   <div className="flex items-center mb-4">
                     <img
+                      onClick={() => hanldeShowProfile(questionItem.author._id)}
                       src={
                         questionItem.author?.profilePicture
                           ? ` ${questionItem.author.profilePicture}`
@@ -705,9 +727,10 @@ const QA = () => {
                       className="w-12 h-12 rounded-full mr-4 object-cover"
                     />
                     <div>
-                      <p className="font-semibold">
+                      <p onClick={hanldeShowProfile} className="font-semibold">
                         {questionItem.author?.name || "Unknown User"}
                       </p>
+                     
                       <p className="text-sm text-gray-500">
                         <span>
                           {formatDistanceToNow(
