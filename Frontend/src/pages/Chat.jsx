@@ -14,6 +14,7 @@ import { MdAttachEmail, MdAttachFile, MdAttachment, MdDelete, MdEdit,   MdMore, 
 import EmojiPicker from 'emoji-picker-react';
 import { formatDistanceToNow } from "date-fns";
 import {createGroup, getGroup, deleteGroup} from "../services/api"
+import Connection from "../components/Connection";
 const Chat = () => {
   // State declarations
   const [socket, setSocket] = useState(null);
@@ -37,7 +38,21 @@ const Chat = () => {
   const [groupId, setGroupId] = useState(null)
 
 
-   
+        const [selectedUser, setSelectedUser] = useState(null);
+
+        const [showProfile, setShowProfile] = useState(false);
+        const hanldeShowProfile = async (userId) => {
+          console.log("Fetching user ID:", userId); // Add this to check the ID
+          try {
+            const response = await api.get(`/auth/users/${userId}`);
+            const data = await response.data; // Correctly retrieve data (not `response.json()`)
+            console.log("Fetched user data:", data); // Add this to debug the response
+            setSelectedUser(data);
+            setShowProfile(true);
+          } catch (error) {
+            console.error("Error fetching user details:", error);
+          }
+        };
   const token = getToken();
   const decodedToken = jwtDecode(token);
   const userId = decodedToken.userId;
@@ -351,15 +366,16 @@ const handleEmojiClick = (event, emojiObject) => {
                       : "hover:bg-gray-50"
                   }`}
                 >
-                  <p  className="font-medium  flex justify-between items-center  text-gray-700  gap">
+                  <p className="font-medium  flex justify-between items-center  text-gray-700  gap">
                     <span>
                       {" "}
-                      {group.groupIcon && (  <img
-                        src={`  ${group.groupIcon}`}
-                        alt="Profile"
-                        className="w-5 h-5 rounded-full border-2 border-white shadow-md"
-                      /> )}
-                     
+                      {group.groupIcon && (
+                        <img
+                          src={`  ${group.groupIcon}`}
+                          alt="Profile"
+                          className="w-5 h-5 rounded-full border-2 border-white shadow-md"
+                        />
+                      )}
                       {group.name}
                     </span>
                     <span onClick={() => setGroupId(group._id)}>
@@ -369,17 +385,21 @@ const handleEmojiClick = (event, emojiObject) => {
                   </p>
                   {groupId === group._id && (
                     <div className="  shadow-lg rounded-lg flex flex-col gap-3 p-5 bg-slate-500 w-25 absolute top-0 right-8">
-                       <span onClick={() => setGroupId(null)} className="text-center text-white text-sm absolute top-0 right-1">x</span>
-                     <button className="text-sm text-green-500 rounded-lg shadow  shadow-white px-2 py-1">
+                      <span
+                        onClick={() => setGroupId(null)}
+                        className="text-center text-white text-sm absolute top-0 right-1"
+                      >
+                        x
+                      </span>
+                      <button className="text-sm text-green-500 rounded-lg shadow  shadow-white px-2 py-1">
                         Invite
-                      </button> 
+                      </button>
                       <button
                         onClick={() => handleGroupDelete(group._id)}
                         className="text-sm px-1 text-red-700 rounded-lg shadow  shadow-orange-400 py-1"
                       >
                         Delete
                       </button>
-                      
                     </div>
                   )}
                 </div>
@@ -387,7 +407,9 @@ const handleEmojiClick = (event, emojiObject) => {
             </div>
           </div>
         </div>
-
+        {showProfile && (
+          <Connection user={selectedUser} close={() => setShowProfile(false)} />
+        )}
         {/* Main Chat Area */}
         <div className="flex-1 flex flex-col h-full overflow-y-auto">
           {/* Chat Header - Fixed at top */}
@@ -419,6 +441,7 @@ const handleEmojiClick = (event, emojiObject) => {
                     }`}
                   >
                     <img
+                      onClick={() => hanldeShowProfile(msg.sender._id)}
                       src={` ${msg.sender.profilePicture}`}
                       alt="Profile"
                       className="w-8 h-8 rounded-full border-2 border-white shadow-md"
@@ -640,6 +663,7 @@ const handleEmojiClick = (event, emojiObject) => {
                 >
                   {user.profilePicture && (
                     <img
+                      onClick={() => hanldeShowProfile(user._id)}
                       src={` ${user.profilePicture}`}
                       alt="Profile"
                       className="w-10 h-10 rounded-full border-2 border-white shadow-md"
@@ -747,6 +771,7 @@ const handleEmojiClick = (event, emojiObject) => {
                       >
                         {user.profilePicture && (
                           <img
+                            onClick={() => hanldeShowProfile(user._id)}
                             src={` ${user.profilePicture}`}
                             alt="Profile"
                             className="w-10 h-10 rounded-full border-2 border-white shadow-md"

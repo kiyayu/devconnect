@@ -30,7 +30,71 @@ const Connection = ({ user, close }) => {
   const [showFriendsList, setShowFriendsList] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const token = getToken();
+const [processingFriendId, setProcessingFriendId] = useState(null);
+const [friendStatuses, setFriendStatuses] = useState({});
+   const [showProfile, setShowProfile] = useState(false);
+// ... (previous useEffect and other functions remain the same)
 
+const fetchFriendStatuses = async (friendsList) => {
+  try {
+    const statuses = {};
+    for (const friend of friendsList) {
+      const response = await api.get(`/connections/${friend._id}/status`);
+      statuses[friend._id] = response.data.status;
+    }
+    setFriendStatuses(statuses);
+  } catch (error) {
+    console.error("Failed to fetch friend statuses:", error);
+    toast.error("Failed to fetch friend statuses");
+  }
+};
+
+const handleFriendList = async () => {
+  try {
+    const response = await api.get(`/connections/${user._id}/friends`);
+    const friendsList = response.data || [];
+    setFriends(friendsList);
+    await fetchFriendStatuses(friendsList);
+  } catch (error) {
+    console.error("Error fetching friend list:", error);
+    toast.error("Failed to fetch friend list");
+  }
+};
+
+const handleFriendAction = async (friendId) => {
+  setProcessingFriendId(friendId);
+  try {
+    const status = friendStatuses[friendId];
+
+    if (!status || status === "none") {
+      await api.post(`/connections/${friendId}/request`);
+      setFriendStatuses((prev) => ({
+        ...prev,
+        [friendId]: "pending",
+      }));
+      toast.success("Friend request sent successfully!");
+    } else if (status === "pending") {
+      await api.post(`/connections/${friendId}/cancel-request`);
+      setFriendStatuses((prev) => ({
+        ...prev,
+        [friendId]: "none",
+      }));
+      toast.success("Friend request cancelled!");
+    } else if (status === "accepted") {
+      await api.post(`/connections/${friendId}/unfriend`);
+      setFriendStatuses((prev) => ({
+        ...prev,
+        [friendId]: "none",
+      }));
+      toast.success("Friend removed successfully!");
+    }
+  } catch (error) {
+    console.error("Friend action error:", error);
+    toast.error("Failed to process friend action");
+  } finally {
+    setProcessingFriendId(null);
+  }
+};
   const handleImageLoad = () => {
     setIsImageLoading(false);
   };
@@ -149,19 +213,63 @@ const Connection = ({ user, close }) => {
     }
   };
 
-  const handleFriendList = async () => {
-    try {
-      const response = await api.get(`/connections/${user._id}/friends`);
-      setFriends(response.data || []);
-    } catch (error) {
-      console.error("error", error);
-    }
-  };
+ 
 
   const toggleFriendsList = () => {
     setShowFriendsList(!showFriendsList);
   };
+  const renderFriendActionButton = (friend) => {
+    const status = friendStatuses[friend._id];
+    const isProcessing = processingFriendId === friend._id;
 
+    if (isProcessing) {
+      return (
+        <motion.button
+          className="text-sm bg-gray-400 text-white px-3 py-1 rounded flex items-center gap-1"
+          disabled
+        >
+          Processing...
+        </motion.button>
+      );
+    }
+
+    switch (status) {
+      case "none":
+        return (
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={() => handleFriendAction(friend._id)}
+            className="text-sm bg-green-500 text-white px-3 py-1 rounded hover:bg-green-600 flex items-center gap-1"
+          >
+            <MdPersonAdd />
+            Add Friend
+          </motion.button>
+        );
+      case "pending":
+        return (
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            onClick={() => handleFriendAction(friend._id)}
+            className="text-sm bg-yellow-500 text-white px-3 py-1 rounded hover:bg-yellow-600 flex items-center gap-1"
+          >
+            Cancel Request
+          </motion.button>
+        );
+      case "accepted":
+        return (
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            onClick={() => handleFriendAction(friend._id)}
+            className="text-sm bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 flex items-center gap-1"
+          >
+            Unfriend
+          </motion.button>
+        );
+      default:
+        return null;
+    }
+  };
   const renderActionButton = () => {
     switch (connectionStatus) {
       case "none":
@@ -404,36 +512,37 @@ const Connection = ({ user, close }) => {
               )}
             </div>
           </motion.div>
-
           {showFriendsList && (
             <motion.div
               initial={{ y: -100, opacity: 0.3 }}
               animate={{ y: 0, opacity: 1 }}
               transition={{ duration: 0.5 }}
-              className="z-50 bg-white w-full top-0 absolute rounded-xl shadow-lg shadow-slate-800 p-4 sm:p-6"
+              className="z-50 bg-white w-full top-0 absolute rounded-xl shadow-lg shadow-slate-800 p-4 sm:p-6 max-h-[80vh] overflow-y-auto"
             >
-              <h2 className="text-xl sm:text-2xl font-bold mb-4 text-gray-800">
-                {user.name} Friends
-                <span className="ml-2 text-sm font-normal text-gray-500">
-                  ({friends.length})
-                </span>
-              </h2>
+              <div className="sticky top-0 bg-white pb-4 z-10">
+                <h2 className="text-xl sm:text-2xl font-bold mb-4 text-gray-800">
+                  {user.name}'s Friends
+                  <span className="ml-2 text-sm font-normal text-gray-500">
+                    ({friends.length})
+                  </span>
+                </h2>
 
-              <div className="mb-4">
-                <input
-                  type="text"
-                  placeholder="Search friends..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
+                <div className="mb-4">
+                  <input
+                    type="text"
+                    placeholder="Search friends..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+                <button
+                  onClick={() => setShowFriendsList(false)}
+                  className="absolute top-2 right-2 p-2 hover:bg-gray-100 rounded-full"
+                >
+                  <MdClose className="text-xl" />
+                </button>
               </div>
-              <span
-                onClick={() => setShowFriendsList(false)}
-                className="absolute top-2 right-2 cursor-pointer"
-              >
-                <MdClose />
-              </span>
 
               {filteredFriends.length === 0 ? (
                 <div className="text-center py-8">
@@ -444,36 +553,36 @@ const Connection = ({ user, close }) => {
                   </p>
                 </div>
               ) : (
-                <ul className="space-y-3">
+                <ul className="space-y-3 h-[50vh] overflow-y-auto">
                   {filteredFriends.map((friend) => (
-                    <li
+                    <motion.li
                       key={friend._id}
-                      className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
                     >
-                      <img
-                        src={friend.profilePicture || "/default-avatar.png"}
-                        alt={friend.name}
-                        className="w-10 h-10 rounded-full object-cover"
-                        onError={(e) => {
-                          e.target.src = "/default-avatar.png";
-                        }}
-                      />
-                      <div>
-                        <h3 className="font-medium text-gray-800">
-                          {friend.name}
-                        </h3>
-                        <motion.button
-                          whileHover={{ scale: 1.05 }}
-                          whileTap={{ scale: 0.95 }}
-                          disabled={loading}
-                          onClick={handleFriendRequest}
-                          className="text-sm bg-green-500 text-white px-3 py-1 rounded hover:bg-green-600 disabled:bg-gray-400 flex items-center gap-1"
-                        >
-                          <MdPersonAdd />
-                          {loading ? "Sending..." : "Add Friend"}
-                        </motion.button>
+                      <div className="flex items-center space-x-3">
+                        <img
+                          src={friend.profilePicture || "/default-avatar.png"}
+                          alt={friend.name}
+                          className="w-10 h-10 rounded-full object-cover"
+                          onError={(e) => {
+                            e.target.src = "/default-avatar.png";
+                          }}
+                        />
+                        <div>
+                          <h3 className="font-medium text-gray-800">
+                            {friend.name}
+                          </h3>
+                          <p className="text-sm text-gray-500">
+                            {friend.mutualFriends} mutual friends
+                          </p>
+                        </div>
                       </div>
-                    </li>
+                    
+                    
+                      {renderFriendActionButton(friend)}
+                    </motion.li>
                   ))}
                 </ul>
               )}
