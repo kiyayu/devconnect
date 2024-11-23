@@ -1,6 +1,7 @@
 const Group = require("../models/group")
 const User = require("../models/User")
 const path = require("path")
+const mongoose = require('mongoose')
 // Create Group
 const createGroup = async (req, res) => {
   try {
@@ -17,7 +18,7 @@ const createGroup = async (req, res) => {
     // Create a new group with admin and initialize members as an array
     const newGroup = new Group({
       name, 
-      admin,
+      admin, 
       members: [admin], 
       groupIcon, 
     });
@@ -47,6 +48,38 @@ const getAllGroups = async (req, res) => {
   }
 };
 
+const getGroupById = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    
+    // Validate ObjectId
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      console.error("Invalid ObjectId format:", id);
+      return res.status(400).json({ error: "Invalid ID format" });
+    }
+ 
+    // Query the database
+    const groupById = await Group.findById(id)
+      .populate("admin", "name profilePicture")
+      .populate("members", "name profilePicture")
+      .lean();
+
+    if (!groupById) {
+      console.warn("Group not found for ID:", id);
+      return res.status(404).json({ error: "Group not found" });
+    }
+
+    
+    res.json(groupById);
+  } catch (error) {
+    console.error("Error in getGroupById:", error);
+    res.status(500).json({ error: "Server error" });
+  }
+};
+
+
+// delete group
 const deleteGroup = async (req, res) => {
   try {
     const { id } = req.params; // Get group ID from the request
@@ -79,4 +112,38 @@ const deleteGroup = async (req, res) => {
   }
 };
 
-module.exports = { createGroup, getAllGroups, deleteGroup };
+// join group 
+// In your Group routes/controller
+const joinGroup = async (req, res) => {
+  try {
+    const userId = req.userId;
+    const { groupId } = req.params; // Changed from groupId to id
+    
+    // Find the group
+    const group = await Group.findById(groupId);
+    if (!group) {
+      return res.status(404).send({ message: "Group not found" });
+    }
+
+    // Check if user is already a member
+    if (group.members.includes(userId)) {
+      return res
+        .status(400)
+        .send({ message: "You are already a member of this group" });
+    }
+
+    // Add the user to the group's members
+    group.members.push(userId);
+    await group.save();
+
+    return res.status(200).send({
+      message: "Joined the group successfully",
+      group,
+    });
+  } catch (error) {
+    console.error(`Error joining group:`, error);
+    return res.status(500).send({ message: "An error occurred" });
+  }
+};
+
+module.exports = { createGroup, getAllGroups, deleteGroup, getGroupById, joinGroup, };

@@ -10,11 +10,12 @@ import { motion, AnimatePresence } from "framer-motion";
 import { IoSend, IoAddCircle, IoClose } from "react-icons/io5";
 import { FiUsers, FiMessageCircle, FiMenu, FiArrowDownLeft, FiArrowLeft } from "react-icons/fi";
 import { BsImage } from "react-icons/bs";
-import { MdAttachEmail, MdAttachFile, MdAttachment, MdDelete, MdEdit,   MdMore,   MdMoreHoriz, MdSignalCellularNull, } from "react-icons/md";
+import { MdAttachEmail, MdAttachFile, MdAttachment, MdClose, MdDelete, MdEdit,   MdMore,   MdMoreHoriz, MdSignalCellularNull, } from "react-icons/md";
 import EmojiPicker from 'emoji-picker-react';
 import { formatDistanceToNow } from "date-fns";
 import {createGroup, getGroup, deleteGroup} from "../services/api"
 import Connection from "../components/Connection";
+import ScrollToBottom from "react-scroll-to-bottom";
 const Chat = () => {
   // State declarations
   const [socket, setSocket] = useState(null);
@@ -26,6 +27,7 @@ const Chat = () => {
   const [groups, setGroups] = useState([]);
   const [selectedRoom, setSelectedRoom] = useState(null);
   const [currentChat, setCurrentChat] = useState(null);
+  const [currentId, setCurrentId] = useState(null)
   const messagesEndRef = useRef(null);
   const [showGroupCreate, setShowGroupCreate] = useState(false);
   const [showMobileMenu, setShowMobileMenu] = useState(false);
@@ -36,7 +38,12 @@ const Chat = () => {
   const [isAutoScrollEnabled, setIsAutoScrollEnabled] = useState(true);
   const [moreId, setMoreId] = useState(null)
   const [groupId, setGroupId] = useState(null)
-
+  const [showUserList, setShowUserList] = useState(false)
+  const [groupUserList, setGroupUserList] = useState([])
+  const [isMember, setIsMember] = useState(false); // Track if user is already a member
+  const [showJoinButton, setShowJoinButton] = useState(false);
+  console.log(groupUserList)
+  console.log(currentId)
 
         const [selectedUser, setSelectedUser] = useState(null);
 
@@ -229,10 +236,8 @@ const toggleEmojiPicker = () => {
   setShowEmojiPicker((prev) => !prev);
 };
 
-const handleEmojiClick = (event, emojiObject) => {
-  if (emojiObject && emojiObject.emoji) {
-    setContent((prevMessage) => prevMessage + emojiObject.emoji);
-  }
+const handleEmojiClick = (emojiObject) => {
+  setContent((prevMessage) => prevMessage + emojiObject.emoji);
 };
 
  
@@ -277,6 +282,7 @@ const handleEmojiClick = (event, emojiObject) => {
     (roomId, chatName) => {
       if (socket) {
         setSelectedRoom(roomId);
+       
         setCurrentChat(chatName);
         socket.emit("joinRoom", roomId);
       }
@@ -286,6 +292,7 @@ const handleEmojiClick = (event, emojiObject) => {
 
   useEffect(() => {
     fetchGroups();
+    handleGroupUserList()
   }, []);
 
   const handleGroupDelete = async (id) => {
@@ -316,6 +323,62 @@ const handleEmojiClick = (event, emojiObject) => {
       setGroupIcon(file);
     }
   };
+
+const handleGroupUserList = async () => {
+  try {
+    const response = await api.get(`/group/${currentId}`);
+    setGroupUserList(response.data.members); // Set only the members array
+    setShowUserList(true);
+    
+  } catch (error) {
+    console.error("Error fetching group user list:", error);
+  }
+};
+
+useEffect(() => {
+  const checkMembership = async () => {
+    try {
+      const response = await api.get(`/group/${currentId}`);
+      const group = response.data;
+      if (group.members.includes(userId)) {
+        setIsMember(true);
+        setShowJoinButton(false);
+      } else {
+        setIsMember(false);
+        setShowJoinButton(true);
+      }
+    } catch (error) {
+      console.error("Error checking group membership:", error);
+      alert("Could not check group membership. Please try again.");
+    }
+  };
+
+  if (currentId && userId) {
+    checkMembership();
+  }
+}, [currentId, userId]);
+
+
+const handleJoinGroup = async () => {
+  if (!currentId) {
+    toast.error("Invalid group selected. Please select a valid group.");
+    return;
+  }
+console.log(`this si handlejiongorup current id ${currentId}`);
+  try {
+    const response = await api.post(`/group/join/${currentId}`);
+    setIsMember(true);
+    setShowJoinButton(false);
+    // Update the group user list after joining
+    handleGroupUserList();
+    toast.success(response.data.message || "You have joined the group!");
+  } catch (error) {
+    console.error("Error joining group:", error);
+    toast.error(
+      error.response?.data?.message || "Failed to join the group. Try again."
+    );
+  }
+};
 
   return (
     <div className="h-[90vh] w-[100%]  bg-gray-50   ">
@@ -359,7 +422,9 @@ const handleEmojiClick = (event, emojiObject) => {
               {groups.map((group) => (
                 <div
                   key={group._id}
-                  onClick={() => joinRoom(group._id, group.name)}
+                  onClick={() =>
+                    joinRoom(group._id, group.name, setCurrentId(group._id))
+                  }
                   className={`cursor-pointer relative p-3 rounded-xl transition-all duration-200 ${
                     selectedRoom === group._id
                       ? "bg-indigo-50 border-l-4 border-indigo-600"
@@ -367,13 +432,13 @@ const handleEmojiClick = (event, emojiObject) => {
                   }`}
                 >
                   <p className="font-medium  flex justify-between items-center  text-gray-700  gap">
-                    <span>
+                    <span className="flex items-center gap-3">
                       {" "}
                       {group.groupIcon && (
                         <img
                           src={`  ${group.groupIcon}`}
                           alt="Profile"
-                          className="w-5 h-5 rounded-full border-2 border-white shadow-md"
+                          className="w-12 h-12 rounded-full border-2 border-white shadow-md"
                         />
                       )}
                       {group.name}
@@ -384,12 +449,12 @@ const handleEmojiClick = (event, emojiObject) => {
                     </span>
                   </p>
                   {groupId === group._id && (
-                    <div className="  shadow-lg rounded-lg flex flex-col gap-3 p-5 bg-slate-500 w-25 absolute top-0 right-8">
+                    <div className="  shadow-lg rounded-lg flex flex-col gap-3 p-5 bg-slate-500 w-25 absolute top-0 z-10 right-8">
                       <span
                         onClick={() => setGroupId(null)}
                         className="text-center text-white text-sm absolute top-0 right-1"
                       >
-                        x
+                        <MdClose />
                       </span>
                       <button className="text-sm text-green-500 rounded-lg shadow  shadow-white px-2 py-1">
                         Invite
@@ -399,9 +464,13 @@ const handleEmojiClick = (event, emojiObject) => {
                         className="text-sm px-1 text-red-700 rounded-lg shadow  shadow-orange-400 py-1"
                       >
                         Delete
-                      </button>
+                      </button>  
+             
                     </div>
                   )}
+
+
+            
                 </div>
               ))}
             </div>
@@ -413,187 +482,233 @@ const handleEmojiClick = (event, emojiObject) => {
         {/* Main Chat Area */}
         <div className="flex-1 flex flex-col h-full overflow-y-auto">
           {/* Chat Header - Fixed at top */}
-          <div className="sticky   z-10 p-4 border-b bg-white">
+          <div className="sticky  flex gap-4  items-center  p-4 border-b bg-white">
             <h2 className="text-xl font-bold text-gray-800">
               {currentChat || "Select a chat"}
             </h2>
+           {groupUserList && (  
+           <p
+              onClick={handleGroupUserList}
+              className="flex  gap-1 items-center border text-sm p-1 rounded-lg px-2"
+            >
+              {" "}
+              <FiUsers color="green" size={20} />
+              members
+            </p>  )}      
+                  
+               {showJoinButton && !isMember && (
+            <button className="text-green-500 text-sm" onClick={handleJoinGroup}>Join </button>
+          )}
+          {isMember && <p className="text-sm text-green-800">You are  member</p>}
           </div>
-
+          {showUserList && (
+            <motion.div className="z-50  shadow-lg bg-white rounded-lg  p-2  py-3 w-[200px] absolute top-20 right-[30%]">
+              <span
+                className="absolute rounded-full top-0.5 p-2 left-[85%]    duration-200 ease-linear    hover:bg-slate-300  raounded-full "
+                onClick={() => setShowUserList(false)}
+              >
+                <MdClose />
+              </span>
+              {groupUserList.map((user) => (
+                <div key={user._id} className="flex items-center gap-2 p-2 ">
+                  <img
+                    src={user.profilePicture}
+                    alt={user.name}
+                    className="w-8 h-8 rounded-full"
+                  />
+                  <p>{user.name}</p>
+                </div>
+              ))}
+            </motion.div>
+          )}
+         
           {/* Messages Area */}
           <div
-            ref={messagesContainerRef}
-            onScroll={handleScroll}
-            className="flex-1 overflow-y-auto p-4"
+            className="flex-1 overflow-y-hidden p-4"
+            style={{
+              height: "100%", // Ensures it fills the parent container
+              display: "flex",
+              flexDirection: "column",
+            }}
           >
-            <AnimatePresence>
-              {messages.map((msg, index) => (
-                <motion.div
-                  key={index}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className={`flex ${
-                    msg.sender._id === userId ? "justify-end" : "justify-start"
-                  } mb-4 relative`}
-                >
-                  <div
-                    className={`flex items-start gap-2 max-w-[70%] ${
-                      msg.sender._id === userId ? "flex-row-reverse" : ""
-                    }`}
+            <ScrollToBottom className="flex-1 overflow-y-auto">
+              <AnimatePresence>
+                {messages.map((msg, index) => (
+                  <motion.div
+                    key={index}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className={`flex ${
+                      msg.sender._id === userId
+                        ? "justify-end"
+                        : "justify-start"
+                    } mb-4 relative`}
                   >
-                    <img
-                      onClick={() => hanldeShowProfile(msg.sender._id)}
-                      src={` ${msg.sender.profilePicture}`}
-                      alt="Profile"
-                      className="w-8 h-8 rounded-full border-2 border-white shadow-md"
-                    />
                     <div
-                      className={`px-3 rounded-lg ${
-                        msg.sender._id === userId
-                          ? "bg-indigo-400 text-white"
-                          : "bg-gray-100"
+                      className={`flex items-start gap-2 max-w-[70%] ${
+                        msg.sender._id === userId ? "flex-row-reverse" : ""
                       }`}
                     >
-                      <p className="text-sm text-[10px] font-medium mb-1">
-                        {msg.sender.name}
-                      </p>
-                      {editingMessage === msg._id ? (
-                        <div className="flex gap-2">
-                          <input
-                            type="text"
-                            defaultValue={msg.content}
-                            className="px-2 py-1 rounded text-black"
-                            onKeyPress={(e) => {
-                              if (e.key === "Enter") {
-                                handleUpdateMessage(msg._id, e.target.value);
-                              }
-                            }}
-                          />
-
-                          <button
-                            onClick={() => setEditingMessage(null)}
-                            className="text-xs bg-red-500 px-2 py-1 rounded"
-                          >
-                            Cancel
-                          </button>
-                        </div>
-                      ) : (
-                        <>
-                          <p
-                            className={
-                              msg.sender._id === userId
-                                ? "text-white"
-                                : "text-gray-700"
-                            }
-                          >
-                            {msg.isDeleted ? "Message deleted" : msg.content}
-                            <p className="text-sm text-slate-600 opacity-40">
-                              {" "}
-                              {!msg.isEdited
-                                ? `${formatDistanceToNow(
-                                    new Date(msg.createdAt)
-                                  )} ago`
-                                : ""}
-                            </p>
-                          </p>
-                          {!msg.isDeleted &&
-                            (msg.isEdited
-                              ? `Edited ${formatDistanceToNow(
-                                  new Date(msg.editedAt)
-                                )} ago`
-                              : "")}
-                        </>
-                      )}
-
-                      {/* File Preview Section */}
-                      {msg.file && !msg.isDeleted && (
-                        <div className="mt-2">
-                          {/* Image, video, audio, and PDF previews */}
-                          {msg.fileType === "image" && (
-                            <img
-                              src={` ${msg.file}`}
-                              alt="Preview"
-                              className="max-w-60 h-[30vh] cursor-pointer"
-                              onClick={() =>
-                                window.open(` ${msg.file}`, "_blank")
-                              }
+                      <img
+                        onClick={() => hanldeShowProfile(msg.sender._id)}
+                        src={` ${msg.sender.profilePicture}`}
+                        alt="Profile"
+                        className="w-8 h-8 rounded-full border-2 border-white shadow-md"
+                      />
+                      <div
+                        className={`px-3 rounded-lg ${
+                          msg.sender._id === userId
+                            ? "bg-indigo-400 text-white"
+                            : "bg-gray-100"
+                        }`}
+                      >
+                        <p className="text-sm text-[10px] font-medium mb-1">
+                          {msg.sender.name}
+                        </p>
+                        {editingMessage === msg._id ? (
+                          <div className="flex gap-2">
+                            <input
+                              type="text"
+                              defaultValue={msg.content}
+                              className="px-2 py-1 rounded text-black"
+                              onKeyPress={(e) => {
+                                if (e.key === "Enter") {
+                                  handleUpdateMessage(msg._id, e.target.value);
+                                }
+                              }}
                             />
-                          )}
-                          {msg.fileType === "video" && (
-                            <video
-                              controls
-                              className="max-w-full h-auto cursor-pointer"
-                              onClick={() =>
-                                window.open(` ${msg.file}`, "_blank")
+
+                            <button
+                              onClick={() => setEditingMessage(null)}
+                              className="text-xs bg-red-500 px-2 py-1 rounded"
+                            >
+                              Cancel
+                            </button>
+                          </div>
+                        ) : (
+                          <>
+                            <p
+                              className={
+                                msg.sender._id === userId
+                                  ? "text-white"
+                                  : "text-gray-700"
                               }
                             >
-                              <source src={` ${msg.file}`} type="video/mp4" />
-                              Your browser does not support the video tag.
-                            </video>
-                          )}
-                          {msg.fileType === "audio" && (
-                            <audio controls className="cursor-pointer">
-                              <source src={` ${msg.file}`} type="audio/mpeg" />
-                              Your browser does not support the audio tag.
-                            </audio>
-                          )}
-                          {msg.fileType === "pdf" && (
-                            <a
-                              href={` ${msg.file}`}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="text-blue-600"
+                              {msg.isDeleted ? "Message deleted" : msg.content}
+                              <p className="text-sm text-slate-600 opacity-40">
+                                {" "}
+                                {!msg.isEdited
+                                  ? `${formatDistanceToNow(
+                                      new Date(msg.createdAt)
+                                    )} ago`
+                                  : ""}
+                              </p>
+                            </p>
+                            {!msg.isDeleted &&
+                              (msg.isEdited
+                                ? `Edited ${formatDistanceToNow(
+                                    new Date(msg.editedAt)
+                                  )} ago`
+                                : "")}
+                          </>
+                        )}
+
+                        {/* File Preview Section */}
+                        {msg.file && !msg.isDeleted && (
+                          <div className="mt-2">
+                            {/* Image, video, audio, and PDF previews */}
+                            {msg.fileType === "image" && (
+                              <img
+                                src={` ${msg.file}`}
+                                alt="Preview"
+                                className="max-w-60 h-[30vh] cursor-pointer"
+                                onClick={() =>
+                                  window.open(` ${msg.file}`, "_blank")
+                                }
+                              />
+                            )}
+                            {msg.fileType === "video" && (
+                              <video
+                                controls
+                                className="max-w-full h-auto cursor-pointer"
+                                onClick={() =>
+                                  window.open(` ${msg.file}`, "_blank")
+                                }
+                              >
+                                <source src={` ${msg.file}`} type="video/mp4" />
+                                Your browser does not support the video tag.
+                              </video>
+                            )}
+                            {msg.fileType === "audio" && (
+                              <audio controls className="cursor-pointer">
+                                <source
+                                  src={` ${msg.file}`}
+                                  type="audio/mpeg"
+                                />
+                                Your browser does not support the audio tag.
+                              </audio>
+                            )}
+                            {msg.fileType === "pdf" && (
+                              <a
+                                href={` ${msg.file}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-blue-600"
+                              >
+                                View PDF
+                              </a>
+                            )}
+                          </div>
+                        )}
+
+                        {/* Delete Button */}
+
+                        {!msg.isDeleted && msg.sender._id === userId && (
+                          <div className="relative   z-10">
+                            <div
+                              onClick={() => handleMore(msg._id)}
+                              className=" relative rounded-full cursor-pointer transition-colors"
                             >
-                              View PDF
-                            </a>
-                          )}
-                        </div>
-                      )}
+                              <MdMoreHoriz className="text-gray-600 text-xl hover:text-white" />
+                            </div>{" "}
+                          </div>
+                        )}
 
-                      {/* Delete Button */}
-
-                      {!msg.isDeleted && msg.sender._id === userId && (
-                        <div className="relative   z-10">
-                          <div
-                            onClick={() => handleMore(msg._id)}
-                            className=" relative rounded-full cursor-pointer transition-colors"
-                          >
-                            <MdMoreHoriz className="text-gray-600 text-xl hover:text-white" />
-                          </div>{" "}
-                        </div>
-                      )}
-
-                      {moreId === msg._id && (
-                        <div className="absolute top-8 z-20 right-5 bg-white rounded-lg shadow-lg border border-gray-200 w-24 overflow-hidden">
-                          <button
-                            onClick={() => {
-                              setEditingMessage(msg._id), setMoreId(null);
-                            }}
-                            className="w-full px-4 py-2 text-sm text-left hover:bg-gray-50 flex items-center gap-2 text-blue-600"
-                          >
-                            <MdEdit className="text-lg" />
-                            Edit
-                          </button>
-                          <button
-                            onClick={() => {
-                              handleDeleteMessage(msg._id), setMoreId(null);
-                            }}
-                            className="w-full px-4 py-2 text-sm text-left hover:bg-gray-50 flex items-center gap-2 text-red-600"
-                          >
-                            <MdDelete className="text-lg" />
-                            Delete
-                          </button>
-                        </div>
-                      )}
+                        {moreId === msg._id && (
+                          <div className="absolute top-8 z-20 right-5 bg-white rounded-lg shadow-lg border border-gray-200 w-24 overflow-hidden">
+                            <button
+                              onClick={() => {
+                                setEditingMessage(msg._id), setMoreId(null);
+                              }}
+                              className="w-full px-4 py-2 text-sm text-left hover:bg-gray-50 flex items-center gap-2 text-blue-600"
+                            >
+                              <MdEdit className="text-lg" />
+                              Edit
+                            </button>
+                            <button
+                              onClick={() => {
+                                handleDeleteMessage(msg._id), setMoreId(null);
+                              }}
+                              className="w-full px-4 py-2 text-sm text-left hover:bg-gray-50 flex items-center gap-2 text-red-600"
+                            >
+                              <MdDelete className="text-lg" />
+                              Delete
+                            </button>
+                          </div>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                </motion.div>
-              ))}
-            </AnimatePresence>
+                  </motion.div>
+                ))}
+              </AnimatePresence>
+            </ScrollToBottom>
           </div>
 
           {/* Message Input */}
           <div className="sticky bottom-0 p-4 border-t bg-white">
-            <div className="flex gap-3 items-center">
+            <div className="flex   items-center gap-2 justify-evenly relative ">
+              {" "}
+              {/* Added relative positioning */}
               <label
                 htmlFor="file-upload"
                 className="rounded-full p-2 border border-green-500 bg-green-200 bg-opacity-50"
@@ -604,26 +719,29 @@ const handleEmojiClick = (event, emojiObject) => {
                 type="file"
                 id="file-upload"
                 style={{ display: "none" }}
-                onChange={handleFileChange} // Only use onChange to set the file
+                onChange={handleFileChange}
               />
-
               <input
                 type="text"
-                className="flex-1 px-4 py-3 rounded-xl border border-gray-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200"
+                className="py-3 w-full rounded-xl border border-gray-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200"
                 value={content}
                 onChange={(e) => setContent(e.target.value)}
                 placeholder="Type a message"
                 onKeyPress={(e) => e.key === "Enter" && sendMessage()}
                 disabled={!selectedRoom}
               />
-              <button onClick={toggleEmojiPicker}>😊</button>
+              <button
+                onClick={toggleEmojiPicker}
+                className="p-2 rounded hover:bg-gray-100"
+              >
+                😊
+              </button>
               {showEmojiPicker && (
-                <div
-                  style={{ position: "absolute", bottom: "60px", zIndex: 1000 }}
-                >
+                <div className="absolute bottom-full right-0 mb-2">
                   <EmojiPicker
                     onEmojiClick={handleEmojiClick}
-                    pickerStyle={{ width: "300px" }}
+                    width={300}
+                    height={400}
                   />
                 </div>
               )}
@@ -631,9 +749,9 @@ const handleEmojiClick = (event, emojiObject) => {
                 whileTap={{ scale: 0.95 }}
                 onClick={sendMessage}
                 disabled={!selectedRoom}
-                className="bg-indigo-600 text-white p-3 rounded-xl hover:bg-indigo-700 disabled:bg-gray-400"
+                className="bg-indigo-600 text-sm text-white p-3 rounded-xl hover:bg-indigo-700 disabled:bg-gray-400"
               >
-                <IoSend className="text-xl" />
+                <IoSend className="text-xl size-3" />
               </motion.button>
             </div>
           </div>
@@ -689,6 +807,7 @@ const handleEmojiClick = (event, emojiObject) => {
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
+            transition={{ duration: 0.5 }}
             exit={{ opacity: 0 }}
             className="fixed inset-0 bg-black bg-opacity-50 z-50 lg:hidden"
             onClick={() => setActiveMobilePanel(null)}
@@ -735,9 +854,42 @@ const handleEmojiClick = (event, emojiObject) => {
                             : "hover:bg-gray-50"
                         }`}
                       >
-                        <p className="font-medium text-gray-700">
-                          {group.name}
+                        <p className="font-medium  flex justify-between items-center  text-gray-700  gap">
+                          <span className="flex items-center gap-3">
+                            {" "}
+                            {group.groupIcon && (
+                              <img
+                                src={`  ${group.groupIcon}`}
+                                alt="Profile"
+                                className="w-12 h-12 rounded-full border-2 border-white shadow-md"
+                              />
+                            )}
+                            {group.name}
+                          </span>
+                          <span onClick={() => setGroupId(group._id)}>
+                            {" "}
+                            <MdMoreHoriz />{" "}
+                          </span>
                         </p>
+                        {groupId === group._id && (
+                          <div className="  shadow-lg rounded-lg flex flex-col gap-3 p-5 bg-slate-500 w-25 absolute top-0 z-10 right-8">
+                            <span
+                              onClick={() => setGroupId(null)}
+                              className="text-center text-white text-sm absolute top-0 right-1"
+                            >
+                              <MdClose />
+                            </span>
+                            <button className="text-sm text-green-500 rounded-lg shadow  shadow-white px-2 py-1">
+                              Invite
+                            </button>
+                            <button
+                              onClick={() => handleGroupDelete(group._id)}
+                              className="text-sm px-1 text-red-700 rounded-lg shadow  shadow-orange-400 py-1"
+                            >
+                              Delete
+                            </button>
+                          </div>
+                        )}
                       </div>
                     ))}
                   </div>
