@@ -19,4 +19,4 @@ services:
     headers:
       - path: /*
         name: Access-Control-Allow-Origin
-        value: https://devconnect-1-imto.onrender.com  # Replace with your frontend URL if needed
+        value: https://devconnect-f.onrender.com
